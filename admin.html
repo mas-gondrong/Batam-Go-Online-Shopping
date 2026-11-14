@@ -684,113 +684,100 @@
   </a>
 </div>
 
-  
-  <!-- 1. FUNGSI KOMPRES GAMBAR -->
+  <!-- BLOK 1 FUNGSI KOMPRES -->
 <script>
-function kompresGambar(file, maxLebar = 800, kualitas = 0.7) {
+let fotoBase64 = "";
+function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKAN MAKSIMAL 600px / kualitas 0.5 biar base64 lebih kecil
   return new Promise((resolve, reject) => {
     if (!file || !file.type.startsWith('image/')) {
       return reject(new Error('Bukan file gambar!'));
     }
-
     const pembaca = new FileReader();
     pembaca.onload = function(e) {
       const img = new Image();
       img.onload = function() {
         let lebar = img.width;
         let tinggi = img.height;
-        
         if (lebar > maxLebar) {
           const rasio = maxLebar / lebar;
           lebar = maxLebar;
           tinggi = Math.round(img.height * rasio);
         }
-
         const canvas = document.createElement('canvas');
         canvas.width = lebar;
         canvas.height = tinggi;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, lebar, tinggi);
-
-        const base64 = canvas.toDataURL('image/jpeg', kualitas);
-        const ukuranAsli = (file.size / 1024).toFixed(1);
-        const ukuranBaru = Math.round((base64.length * 0.75) / 1024);
-        
-        resolve({ base64, ukuranAsli, ukuranBaru });
-      };
-      img.onerror = () => reject(new Error('Gagal memuat gambar'));
+        ctx.drawImage(img,0,0,lebar,tinggi);
+        const base64 = canvas.toDataURL('image/jpeg',kualitas);
+        const ukuranAsli = (file.size /1024).toFixed(1);
+        const ukuranBaru = Math.round((base64.length * 0.75)/1024);
+        resolve({base64,ukuranAsli,ukuranBaru});
+      }
+      img.onerror = ()=>reject("Gagal muat gambar");
       img.src = e.target.result;
-    };
-    pembaca.onerror = () => reject(new Error('Gagal membaca file'));
+    }
     pembaca.readAsDataURL(file);
-  });
+  })
 }
 </script>
 
-   <!-- 2. PREVIEW FOTO + SIMPAN PRODUK (DI TUNGGU HALAMAN SELESAI MUAT) -->
+  <!-- BLOK 2 PREVIEW + SIMPAN PRODUK -->
 <script type="module">
-  import { db } from './firebase-config.js';
-  import { push, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { db } from "./firebase-config.js";
+  import { ref, push, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-  let fotoBase64 = '';
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const inputFoto = document.getElementById("fotoProduk");
+    const previewContainer = document.getElementById("previewContainer");
+    const previewFoto = document.getElementById("previewFoto");
+    const infoUkuran = document.getElementById("infoUkuran");
+    const btnSimpan = document.getElementById("btnSimpanProduk");
 
-  // TUNGGU SELURUH HALAMAN DIMUAT DULU BARU PASANG SEMUA EVENT
-  document.addEventListener('DOMContentLoaded', function () {
-    console.log("✅ DOM Sudah siap");
-
-    const inputFoto = document.getElementById('fotoProduk');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewFoto = document.getElementById('previewFoto');
-    const infoUkuran = document.getElementById('infoUkuran');
-    const btnSimpan = document.getElementById('btnSimpanProduk');
-
-    console.log("Cek tombol simpan: ", btnSimpan);
-
-    // Preview + Kompres Foto
+    // 👉 PREVIEW + ISI VARIABEL fotoBase64 (PENTING!)
     if(inputFoto){
-      inputFoto.addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (!file) {
-          previewContainer.style.display = 'none';
-          fotoBase64 = '';
+      inputFoto.addEventListener("change", async ()=>{
+        const file = inputFoto.files[0];
+        if(!file){
+          previewContainer.style.display="none";
+          window.fotoBase64 = "";
           return;
         }
-        try {
+        try{
           const hasil = await kompresGambar(file);
-          fotoBase64 = hasil.base64;
-          previewFoto.src = fotoBase64;
-          previewContainer.style.display = 'block';
-          infoUkuran.textContent = `✅ Diperkecil dari ${hasil.ukuranAsli} KB → ${hasil.ukuranBaru} KB`;
-        } catch (err) {
-          alert('❌ Error kompres: ' + err.message);
+          window.fotoBase64 = hasil.base64; // ↪️ PAKE window.fotoBase64 (GLOBAL) jadi bisa dibaca tombol simpan
+          previewFoto.src = window.fotoBase64;
+          previewContainer.style.display="block";
+          infoUkuran.innerText = `✅ ${hasil.ukuranAsli}KB → ${hasil.ukuranBaru}KB`;
+        }catch(err){
+          alert("Error kompres: "+err.message);
         }
       })
     }
 
-    // KLIK SIMPAN PRODUK
+    //👉 TOMBOL SIMPAN
     if(btnSimpan){
-      btnSimpan.addEventListener('click', async function () {
-        alert("🟢 TOMBOL DI KLIK MAS BRO!"); // TES: Kalau muncul ini berarti tombol terhubung!
+      btnSimpan.addEventListener("click", async ()=>{
+        alert("🟢 TOMBOL DIKLIK");
+        const nama = document.getElementById("namaProduk").value.trim();
+        const harga = Number(document.getElementById("hargaProduk").value);
+        const diskon = Number(document.getElementById("diskonProduk").value) || 0;
+        const stok = Number(document.getElementById("stokProduk").value) ||0;
+        const deskripsi = document.getElementById("deskripsiProduk").value.trim();
+        const gambar = window.fotoBase64;
 
-        // AMBIL DATA DARI ID (BUKAN PLACEHOLDER LAGI)
-        const nama = document.getElementById('namaProduk').value.trim();
-        const harga = parseInt(document.getElementById('hargaProduk').value);
-        const diskon = parseInt(document.getElementById('diskonProduk').value) || 0;
-        const stok = parseInt(document.getElementById('stokProduk').value) || 0;
-        const deskripsi = document.getElementById('deskripsiProduk').value.trim();
-
-        if (!nama || !harga || !fotoBase64) {
-          alert('❌ Nama, Harga, dan Foto wajib diisi!');
+        // CEK SEMUA ISIAN
+        if(!nama || !harga || !gambar){
+          alert("❌ Nama, Harga, Foto WAJIB diisi");
           return;
         }
-        if (fotoBase64.length > 500000) {
-          alert('⚠️ Gambar terlalu besar, pilih foto lain');
+        if(gambar.length > 300000){ // ↪️ BATAS 300KB (lebih aman dari 500KB)
+          alert("⚠️ Gambar terlalu besar! Pilih foto yang lebih kecil");
           return;
         }
 
-        try {
-          alert('⏳ Menyimpan ke Firebase...');
-          const produkRef = push(ref(db, 'produk/'));
+        try{
+          alert("⏳ Mengirim ke Firebase...");
+          const produkRef = push(ref(db,"produk"));
           await set(produkRef, {
             id: produkRef.key,
             nama: nama,
@@ -798,34 +785,30 @@ function kompresGambar(file, maxLebar = 800, kualitas = 0.7) {
             hargaAsli: Math.round(harga * 100 / (100 - diskon)) || harga,
             diskon: diskon,
             stok: stok,
-            foto: fotoBase64,
+            foto: gambar,
             deskripsi: deskripsi,
-            terjual: 0
+            terjual:0
           })
-          alert('✅ BERHASIL DISIMPAN KE FIREBASE!');
-
+          alert("✅ BERHASIL TERSIMPAN KE FIREBASE!");
           // RESET FORM
-          document.getElementById('namaProduk').value = '';
-          document.getElementById('hargaProduk').value = '';
-          document.getElementById('diskonProduk').value = '';
-          document.getElementById('stokProduk').value = '';
-          document.getElementById('deskripsiProduk').value = '';
-          inputFoto.value = '';
-          previewContainer.style.display = 'none';
-          fotoBase64 = '';
-
-        } catch (err) {
-          alert('❌ Gagal Simpan: ' + err.message);
+          document.getElementById("namaProduk").value = "";
+          document.getElementById("hargaProduk").value = "";
+          document.getElementById("diskonProduk").value = "";
+          document.getElementById("stokProduk").value = "";
+          document.getElementById("deskripsiProduk").value = "";
+          inputFoto.value = "";
+          previewContainer.style.display="none";
+          window.fotoBase64 = "";
+        }catch(err){
+          alert("❌ GAGAL SIMPAN: "+err.message);
           console.error(err);
         }
       })
-    } else {
-      alert("❌ btnSimpanProduk TIDAK DITEMUKAN DI HALAMAN");
     }
   })
 </script>
 
-  <!-- 3. JAVASCRIPT UNTUK GANTI TAB — TETAP ADA DI SINI -->
+<!-- BLOK 3 GANTI TAB -->
 <script>
 document.querySelectorAll('.admin-tab').forEach(tab => {
   tab.addEventListener('click', function() {
@@ -833,13 +816,15 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     switchTab(targetTab);
   });
 });
-
 function switchTab(tabName) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-  document.getElementById(`tab-${tabName}`).classList.add('active');
+  const tabElement = document.querySelector(`[data-tab="${tabName}"]`);
+  const contentElement = document.getElementById(`tab-${tabName}`);
+  if (tabElement && contentElement) {
+    tabElement.classList.add('active');
+    contentElement.classList.add('active');
+  }
 }
 </script>
 </body>
