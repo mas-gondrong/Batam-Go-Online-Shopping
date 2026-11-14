@@ -9,21 +9,12 @@ const firebaseConfig = {
   appId: "1:299306229226:web:21c02a1e57dfea5fdda693"
 };
 
-// Inisialisasi Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-export { db, auth };
+import { getDatabase }   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getAuth }       from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getDatabase(app);
 const auth = getAuth(app);
-const storage = getStorage(app);
 
-export { db, auth, storage };
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
 export { db, auth };
-
