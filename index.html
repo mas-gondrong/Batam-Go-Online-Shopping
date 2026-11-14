@@ -177,8 +177,8 @@ function tutupAkun() {
   <!-- Firebase SDK -->
 <script type="module" src="firebase-config.js"></script>
 
-<!-- Hubungkan Firebase & Baca Produk -->
-  <script type="module">
+<!-- Hubungkan Firebase & Baca Produk (VERSI BENAR) -->
+<script type="module">
 import { db } from './firebase-config.js';
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
@@ -188,7 +188,6 @@ onValue(
   produkRef,
   (snapshot) => {
     const data = snapshot.val();
-    // ✅ Pakai ID yang pasti kita buat di HTML (daftarProdukBeranda)
     const container = document.getElementById("daftarProdukBeranda");
 
     if (!container) {
@@ -206,7 +205,6 @@ onValue(
       ...data[key]
     }));
 
-    // ✅ Kartu produk LENGKAP (tidak terpotong!)
     const htmlKartu = daftarProduk.map(item => {
       const hargaAsli = item.hargaAsli || (item.diskon
         ? Math.round(item.harga * 100 / (100 - item.diskon))
@@ -216,15 +214,15 @@ onValue(
 <a href="detail.html?id=${item.id}" class="product-card">
   <div class="product-image-wrapper">
     <img src="${item.foto}" alt="${item.nama}" class="product-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
-    ${item.diskon ? `<span class="product‑discount">‑${item.diskon}%</span>` : ""}
+    ${item.diskon ? `<span class="product-discount">-${item.diskon}%</span>` : ""}
   </div>
-  <div class="product‑info">
-    <h3 class="product‑name">${item.nama}</h3>
-    <p class="product‑price">
-      Rp ${Number(item.harga||0).toLocaleString('id‑ID')}
-      <small style="text‑decoration:line‑through;color:#999;">Rp ${Number(hargaAsli).toLocaleString('id‑ID')}</small>
+  <div class="product-info">
+    <h3 class="product-name">${item.nama}</h3>
+    <p class="product-price">
+      Rp ${Number(item.harga||0).toLocaleString('id-ID')}
+      <small style="text-decoration:line-through;color:#999;">Rp ${Number(hargaAsli).toLocaleString('id-ID')}</small>
     </p>
-    <p class="product‑sold">${item.terjual || 0} Terjual</p>
+    <p class="product-sold">${item.terjual || 0} Terjual</p>
   </div>
 </a>
 `
@@ -238,6 +236,7 @@ onValue(
     console.error(error);
   }
 )
- </script>
+</script>
 </body>
 </html>
+
