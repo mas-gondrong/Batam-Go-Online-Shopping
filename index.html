@@ -81,16 +81,16 @@
   </a>
 </div>
 
-<!-- PRODUK TERBARU BERANDA -->
+  <!-- PRODUK TERBARU -->
 <div class="section-title">
   <span>Produk Terbaru</span>
   <a href="produk.html">Lihat Semua →</a>
 </div>
 
 <div class="products-container">
-  <!-- ID HARUS PERSIS: id="daftarProdukBeranda" -->
+  <!-- ID HARUS PERSIS: daftarProdukBeranda -->
   <div class="products-grid" id="daftarProdukBeranda">
-    <p style="grid‑column:1 / ‑1;text‑align:center;padding:30px;">Memuat produk dari Firebase...</p>
+    <p style="grid-column:1 / -1;text-align:center;padding:30px;">⏳ Memuat produk dari Firebase...</p>
   </div>
 </div>
 
@@ -178,7 +178,7 @@ function tutupAkun() {
 <script type="module" src="firebase-config.js"></script>
 
 <!-- Hubungkan Firebase & Baca Produk -->
-<script type="module">
+  <script type="module">
 import { db } from './firebase-config.js';
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
@@ -188,24 +188,56 @@ onValue(
   produkRef,
   (snapshot) => {
     const data = snapshot.val();
-    const container = document.querySelector('.products-grid')
-        || document.querySelector('.produk-grid')
-        || document.querySelector('.daftar-produk');
-    if (!container) { console.error('❌ Container produk tidak ketemu!'); return; }
-    if (!data) {
-      container.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Belum ada produk</p>';
+    // ✅ Pakai ID yang pasti kita buat di HTML (daftarProdukBeranda)
+    const container = document.getElementById("daftarProdukBeranda");
+
+    if (!container) {
+      console.error('❌ Container #daftarProdukBeranda TIDAK DITEMUKAN di index.html');
       return;
     }
-    const daftarProduk = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-    // bangun string sekali, assign sekali (lebih cepat dari innerHTML += di loop)
-    container.innerHTML = daftarProduk.map(item => {
+
+    if (!data) {
+      container.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;padding:30px;">Belum ada produk di Firebase</p>';
+      return;
+    }
+
+    const daftarProduk = Object.keys(data).map(key => ({
+      id: key,
+      ...data[key]
+    }));
+
+    // ✅ Kartu produk LENGKAP (tidak terpotong!)
+    const htmlKartu = daftarProduk.map(item => {
       const hargaAsli = item.hargaAsli || (item.diskon
-        ? Math.round(item.harga * 100 / (100 - item.diskon)) : item.harga);
-      return `<a href="detail.html?id=${item.id}" ...> ... Rp ${(item.harga||0).toLocaleString('id-ID')} ...</a>`;
-    }).join('');
-    console.log('✅ Produk dimuat:', daftarProduk.length, 'item');
+        ? Math.round(item.harga * 100 / (100 - item.diskon))
+        : item.harga);
+
+      return `
+<a href="detail.html?id=${item.id}" class="product-card">
+  <div class="product-image-wrapper">
+    <img src="${item.foto}" alt="${item.nama}" class="product-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
+    ${item.diskon ? `<span class="product‑discount">‑${item.diskon}%</span>` : ""}
+  </div>
+  <div class="product‑info">
+    <h3 class="product‑name">${item.nama}</h3>
+    <p class="product‑price">
+      Rp ${Number(item.harga||0).toLocaleString('id‑ID')}
+      <small style="text‑decoration:line‑through;color:#999;">Rp ${Number(hargaAsli).toLocaleString('id‑ID')}</small>
+    </p>
+    <p class="product‑sold">${item.terjual || 0} Terjual</p>
+  </div>
+</a>
+`
+    }).join("");
+
+    container.innerHTML = htmlKartu;
+    console.log('✅ Produk berhasil dimuat: ', daftarProduk.length, 'buah');
   },
-  (error) => {  // ← callback error: ini yang sel
+  (error) => {
+    alert("❌ Error baca data ke beranda: " + error.message);
+    console.error(error);
+  }
+)
  </script>
 </body>
 </html>
