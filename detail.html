@@ -180,6 +180,28 @@ btnKeranjang.onclick = function(){
   alert("✅ Berhasil dimasukkan ke Keranjang! Buka halaman Keranjang");
 }
 
+    btnKeranjang.onclick = function(){
+  const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+  const cekSudahAda = keranjangLama.find(x=>x.id === idProduk);
+  if(cekSudahAda){
+    cekSudahAda.jumlah += 1;
+  }else{
+    keranjangLama.push({
+      id: idProduk,
+      nama: item.nama,
+      harga: Number(item.harga),
+      foto: item.foto,
+      jumlah: 1
+    })
+  }
+  localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
+
+  // ✅ TAMBAH INI
+  updateBadgeKeranjang();
+
+  alert("✅ Berhasil dimasukkan ke Keranjang! Buka halaman Keranjang");
+}
+
     kontenDetail.innerHTML = `
       <img src="${item.foto}" alt="${item.nama}" class="detail-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
       ${item.diskon ? `<span class="diskon-badge">-${item.diskon}%</span>` : ""}
