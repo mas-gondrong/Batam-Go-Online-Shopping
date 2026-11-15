@@ -1,191 +1,197 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF‑8">
-  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
-  <meta name="theme‑color" content="#ee4d2d">
-  <title>Detail Produk | Toko Baju Online</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ee4d2d">
+  <title>Detail Produk | Toko Baju Online</title>
 
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
   <style>
     * {
       margin:0;
       padding:0;
-      box‑sizing:border‑box;
-      font‑family:Arial, sans‑serif;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
     }
     body {
       background:#f5f5f5;
-      padding‑bottom:80px;
+      padding-bottom:80px;
     }
-    .header‑detail {
+    .header-detail {
       background:#ee4d2d;
       color:white;
       padding:14px;
       display:flex;
-      align‑items:center;
+      align-items:center;
       gap:12px;
       position:sticky;
       top:0;
-      z‑index:99;
+      z-index:99;
     }
-    .header‑detail a {
+    .header-detail a {
       color:white;
-      font‑size:20px;
+      font-size:20px;
+      text-decoration:none;
     }
-    .wrapper‑detail {
+    .wrapper-detail {
       padding:15px;
     }
-    .detail‑image {
+    .detail-image {
       width:100%;
       height:320px;
-      object‑fit:contain;
+      object-fit:contain;
       background:white;
-      border‑radius:8px;
-      margin‑bottom:12px;
+      border-radius:8px;
+      margin-bottom:12px;
     }
-    .diskon‑badge {
-      display:inline‑block;
+    .diskon-badge {
+      display:inline-block;
       background:#ff4757;
       color:white;
-      padding:4px 8px;
-      border‑radius:4px;
-      font‑size:13px;
-      margin‑bottom:8px;
+      padding:4px 8px;
+      border-radius:4px;
+      font-size:13px;
+      margin-bottom:8px;
     }
-    .nama‑produk {
-      font‑size:20px;
-      font‑weight:bold;
-      margin‑bottom:8px;
+    .nama-produk {
+      font-size:20px;
+      font-weight:bold;
+      margin-bottom:8px;
     }
-    .harga‑sekarang {
-      font‑size:24px;
+    .harga-sekarang {
+      font-size:24px;
       color:#ee4d2d;
-      font‑weight:bold;
+      font-weight:bold;
     }
-    .harga‑lama {
+    .harga-lama {
       color:#999;
-      text‑decoration:line‑through;
-      margin‑left:8px;
-      font‑size:16px;
+      text-decoration:line-through;
+      margin-left:8px;
+      font-size:16px;
     }
-    .info‑terjual {
-      margin:8px 0 16px 0;
+    .info-terjual {
+      margin:8px 0 16px 0;
       color:#666;
     }
-    .box‑deskripsi {
+    .box-deskripsi {
       background:white;
       padding:14px;
-      border‑radius:8px;
-      margin‑bottom:20px;
+      border-radius:8px;
+      margin-bottom:20px;
     }
-    .box‑deskripsi h4 {
-      margin‑bottom:8px;
+    .box-deskripsi h4 {
+      margin-bottom:8px;
     }
-    .footer‑action {
+    .loading-text {
+      text-align:center;
+      padding:40px;
+    }
+    .footer-action {
       position:fixed;
       bottom:0;
       left:0;
       width:100%;
       background:white;
-      padding:12px 15px;
+      padding:12px 15px;
       display:flex;
       gap:10px;
-      border‑top:1px solid #ddd;
+      border-top:1px solid #ddd;
     }
-    .btn‑keranjang {
+    .btn-keranjang {
       flex:1;
       background:#ff9f1a;
       color:white;
       border:none;
       padding:12px;
-      border‑radius:6px;
-      font‑size:16px;
+      border-radius:6px;
+      font-size:16px;
     }
-    .btn‑beli {
+    .btn-beli {
       flex:1;
       background:#ee4d2d;
       color:white;
       border:none;
       padding:12px;
-      border‑radius:6px;
-      font‑size:16px;
-    }
-    .loading‑text {
-      text‑align:center;
-      padding:40px;
+      border-radius:6px;
+      font-size:16px;
     }
   </style>
 </head>
 <body>
 
   <!-- HEADER -->
-  <div class="header‑detail">
-    <a href="index.html"><i class="fas fa‑arrow‑left"></i></a>
+  <div class="header-detail">
+    <a href="index.html"><i class="fas fa-arrow-left"></i></a>
     <h3>Detail Produk</h3>
   </div>
 
-  <div class="wrapper‑detail" id="kontenDetail">
-    <p class="loading‑text">⏳ Memuat detail produk...</p>
+  <div class="wrapper-detail" id="kontenDetail">
+    <p class="loading-text">⏳ Memuat detail produk...</p>
   </div>
 
 <!-- Firebase Config -->
-<script type="module" src="firebase‑config.js"></script>
+<script type="module" src="firebase-config.js"></script>
 
-<!-- Script Baca Detail Produk -->
+<!-- Script Baca Detail Produk (PERBAIKAN) -->
 <script type="module">
-import { db } from './firebase‑config.js';
-import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+import { db } from './firebase-config.js';
+import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-// Ambil ID dari URL (index.html sudah kirim ?id=xxxx)
+// Ambil ID dari URL
 const urlParams = new URLSearchParams(window.location.search);
 const idProduk = urlParams.get('id');
 const kontenDetail = document.getElementById("kontenDetail");
 
+console.log("✅ ID Produk dari URL:", idProduk);
+
 if(!idProduk){
-  kontenDetail.innerHTML = `<p style="text‑align:center;padding:40px;">❌ Produk tidak ditemukan</p>`;
+  kontenDetail.innerHTML = `<p class="loading-text">❌ Tidak ada ID produk di link</p>`;
 }else{
   const singleRef = ref(db, `produk/${idProduk}`);
   get(singleRef).then((snapshot)=>{
+    console.log("✅ Dapat data detail");
     if(!snapshot.exists()){
-      kontenDetail.innerHTML = `<p style="text‑align:center;padding:40px;">❌ Data produk tidak ada di Firebase</p>`;
+      kontenDetail.innerHTML = `<p class="loading-text">❌ Produk tidak ditemukan di Firebase</p>`;
       return;
     }
     const item = snapshot.val();
     const hargaAsli = item.hargaAsli || (item.diskon ? Math.round(item.harga * 100 / (100 - item.diskon)) : item.harga);
 
     kontenDetail.innerHTML = `
-      <img src="${item.foto}" alt="${item.nama}" class="detail‑image" onerror="this.src='https://picsum.photos/id/21/400/300'">
-      ${item.diskon ? `<span class="diskon‑badge">‑${item.diskon}%</span>` : ""}
-      <h2 class="nama‑produk">${item.nama}</h2>
+      <img src="${item.foto}" alt="${item.nama}" class="detail-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
+      ${item.diskon ? `<span class="diskon-badge">-${item.diskon}%</span>` : ""}
+      <h2 class="nama-produk">${item.nama}</h2>
       <div>
-        <span class="harga‑sekarang">Rp ${Number(item.harga).toLocaleString('id‑ID')}</span>
-        <span class="harga‑lama">Rp ${Number(hargaAsli).toLocaleString('id‑ID')}</span>
+        <span class="harga-sekarang">Rp ${Number(item.harga).toLocaleString('id-ID')}</span>
+        <span class="harga-lama">Rp ${Number(hargaAsli).toLocaleString('id-ID')}</span>
       </div>
-      <p class="info‑terjual">${item.terjual || 0} Terjual • Stok: ${item.stok || 0}</p>
+      <p class="info-terjual">${item.terjual || 0} Terjual • Stok: ${item.stok || 0}</p>
 
-      <div class="box‑deskripsi">
+      <div class="box-deskripsi">
         <h4>Deskripsi Produk</h4>
         <p>${item.deskripsi || "Tidak ada deskripsi"}</p>
       </div>
     `
   }).catch((err)=>{
-    kontenDetail.innerHTML = `<p style="text‑align:center;padding:40px;color:red;">❌ Error: ${err.message}</p>`;
+    console.error("❌ Error detail:", err);
+    kontenDetail.innerHTML = `<p class="loading-text" style="color:red;">❌ Error: ${err.message}</p>`;
   })
 }
 </script>
 
-<!-- Tombol Beli / Keranjang (nanti kita hubungkan ke keranjang.html) -->
-<div class="footer‑action">
-  <button class="btn‑keranjang" onclick="alert('✅ Ditambahkan ke Keranjang! (Nanti kita sambung ke database keranjang)')">
-    <i class="fas fa‑shopping‑cart"></i> Masukkan Keranjang
+<!-- Tombol Aksi -->
+<div class="footer-action">
+  <button class="btn-keranjang" onclick="alert('✅ Ditambahkan ke Keranjang! (Nanti kita sambung ke keranjang)')">
+    <i class="fas fa-shopping-cart"></i> Masukkan Keranjang
   </button>
-  <button class="btn‑beli" onclick="alert('✅ Langsung Beli (Nanti kita lanjutkan)')">
+  <button class="btn-beli" onclick="alert('✅ Beli Sekarang (Nanti lanjut)')">
     Beli Sekarang
   </button>
 </div>
 
 </body>
 </html>
+  
