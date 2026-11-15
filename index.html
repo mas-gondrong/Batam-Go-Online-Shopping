@@ -240,6 +240,25 @@ onValue(
   }
 )
 </script>
+  <script>
+// FUNGSI UPDATE BADGE KERANJANG (DIPAKAI DI INDEX + BISA DIPANGGIL DARI DETAIL)
+function updateBadgeKeranjang(){
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+  // Hitung SEMUA jumlah keseluruhan barang (bukan cuma jumlah item)
+  let totalBarang = 0;
+  keranjang.forEach(item=> totalBarang += Number(item.jumlah));
+
+  const badge = document.getElementById("badgeKeranjang");
+  if(badge){
+    badge.innerText = totalBarang;
+    // Kalau 0 sembunyikan badge
+    badge.style.display = totalBarang === 0 ? "none" : "grid";
+  }
+}
+
+// Jalankan saat halaman beranda dibuka
+window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
+  </script>
 </body>
 </html>
 
