@@ -1,88 +1,191 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detail Produk — TokoBaju</title>
-  
+  <meta charset="UTF‑8">
+  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
+  <meta name="theme‑color" content="#ee4d2d">
+  <title>Detail Produk | Toko Baju Online</title>
+
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  
-  <!-- Style Utama -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+
+  <style>
+    * {
+      margin:0;
+      padding:0;
+      box‑sizing:border‑box;
+      font‑family:Arial, sans‑serif;
+    }
+    body {
+      background:#f5f5f5;
+      padding‑bottom:80px;
+    }
+    .header‑detail {
+      background:#ee4d2d;
+      color:white;
+      padding:14px;
+      display:flex;
+      align‑items:center;
+      gap:12px;
+      position:sticky;
+      top:0;
+      z‑index:99;
+    }
+    .header‑detail a {
+      color:white;
+      font‑size:20px;
+    }
+    .wrapper‑detail {
+      padding:15px;
+    }
+    .detail‑image {
+      width:100%;
+      height:320px;
+      object‑fit:contain;
+      background:white;
+      border‑radius:8px;
+      margin‑bottom:12px;
+    }
+    .diskon‑badge {
+      display:inline‑block;
+      background:#ff4757;
+      color:white;
+      padding:4px 8px;
+      border‑radius:4px;
+      font‑size:13px;
+      margin‑bottom:8px;
+    }
+    .nama‑produk {
+      font‑size:20px;
+      font‑weight:bold;
+      margin‑bottom:8px;
+    }
+    .harga‑sekarang {
+      font‑size:24px;
+      color:#ee4d2d;
+      font‑weight:bold;
+    }
+    .harga‑lama {
+      color:#999;
+      text‑decoration:line‑through;
+      margin‑left:8px;
+      font‑size:16px;
+    }
+    .info‑terjual {
+      margin:8px 0 16px 0;
+      color:#666;
+    }
+    .box‑deskripsi {
+      background:white;
+      padding:14px;
+      border‑radius:8px;
+      margin‑bottom:20px;
+    }
+    .box‑deskripsi h4 {
+      margin‑bottom:8px;
+    }
+    .footer‑action {
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      background:white;
+      padding:12px 15px;
+      display:flex;
+      gap:10px;
+      border‑top:1px solid #ddd;
+    }
+    .btn‑keranjang {
+      flex:1;
+      background:#ff9f1a;
+      color:white;
+      border:none;
+      padding:12px;
+      border‑radius:6px;
+      font‑size:16px;
+    }
+    .btn‑beli {
+      flex:1;
+      background:#ee4d2d;
+      color:white;
+      border:none;
+      padding:12px;
+      border‑radius:6px;
+      font‑size:16px;
+    }
+    .loading‑text {
+      text‑align:center;
+      padding:40px;
+    }
+  </style>
 </head>
 <body>
 
-<!-- HEADER DETAIL -->
-<div class="detail-header">
-  <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i></a>
-  <span style="font-size: 15px; font-weight: 500;">Detail Produk</span>
-  <a href="#"><i class="far fa-heart"></i></a>
-</div>
-
-<!-- GAMBAR PRODUK -->
-<div class="detail-image-container">
-  <img id="main-image" src="https://picsum.photos/id/21/600/600" alt="Foto Produk" class="detail-image">
-</div>
-
-<!-- INFORMASI PRODUK -->
-<div class="detail-content">
-  <h1 class="detail-name" id="product-name">Kaos Putih Polos Premium Katun Combed 30s</h1>
-  
-  <p class="detail-price">Rp 79.000 <span>Rp 129.000</span></p>
-  
-  <div style="display: flex; gap: 16px; font-size: 13px; color: #666; margin-bottom: 16px;">
-    <span><i class="fas fa-map-marker-alt"></i> Batam, Kepri</span>
-    <span><i class="fas fa-box"></i> 1,2rb Terjual</span>
+  <!-- HEADER -->
+  <div class="header‑detail">
+    <a href="index.html"><i class="fas fa‑arrow‑left"></i></a>
+    <h3>Detail Produk</h3>
   </div>
 
-  <div style="margin-bottom: 16px;">
-    <strong>Varian:</strong>
-    <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-      <button style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">Putih</button>
-      <button style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">Hitam</button>
-      <button style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">Abu-abu</button>
-      <button style="padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">Navy</button>
-    </div>
+  <div class="wrapper‑detail" id="kontenDetail">
+    <p class="loading‑text">⏳ Memuat detail produk...</p>
   </div>
 
-  <div style="margin-bottom: 16px;">
-    <strong>Ukuran:</strong>
-    <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-      <button style="padding: 6px 16px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">S</button>
-      <button style="padding: 6px 16px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">M</button>
-      <button style="padding: 6px 16px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">L</button>
-      <button style="padding: 6px 16px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">XL</button>
-      <button style="padding: 6px 16px; border: 1px solid #ddd; background: #fff; border-radius: 2px;">XXL</button>
-    </div>
-  </div>
+<!-- Firebase Config -->
+<script type="module" src="firebase‑config.js"></script>
 
-  <div class="detail-desc">
-    <h4>Deskripsi Produk</h4>
-    <p>
-      Kaos polos premium terbuat dari katun combed 30s yang halus dan nyaman dipakai sehari-hari.
-      <br><br>
-      ✅ Bahan: Katun Combed 30s<br>
-      ✅ Jahitan standar kualitas ekspor<br>
-      ✅ Tidak mudah luntur dan menyusut<br>
-      ✅ Tersedia banyak pilihan warna & ukuran<br>
-      ✅ Cocok untuk pria & wanita
-    </p>
-  </div>
-</div>
+<!-- Script Baca Detail Produk -->
+<script type="module">
+import { db } from './firebase‑config.js';
+import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
 
-<!-- TOMBOL DI BAWAH -->
-<div class="detail-actions">
-  <button class="btn-chat">
-    <i class="fas fa-comment"></i> Chat
+// Ambil ID dari URL (index.html sudah kirim ?id=xxxx)
+const urlParams = new URLSearchParams(window.location.search);
+const idProduk = urlParams.get('id');
+const kontenDetail = document.getElementById("kontenDetail");
+
+if(!idProduk){
+  kontenDetail.innerHTML = `<p style="text‑align:center;padding:40px;">❌ Produk tidak ditemukan</p>`;
+}else{
+  const singleRef = ref(db, `produk/${idProduk}`);
+  get(singleRef).then((snapshot)=>{
+    if(!snapshot.exists()){
+      kontenDetail.innerHTML = `<p style="text‑align:center;padding:40px;">❌ Data produk tidak ada di Firebase</p>`;
+      return;
+    }
+    const item = snapshot.val();
+    const hargaAsli = item.hargaAsli || (item.diskon ? Math.round(item.harga * 100 / (100 - item.diskon)) : item.harga);
+
+    kontenDetail.innerHTML = `
+      <img src="${item.foto}" alt="${item.nama}" class="detail‑image" onerror="this.src='https://picsum.photos/id/21/400/300'">
+      ${item.diskon ? `<span class="diskon‑badge">‑${item.diskon}%</span>` : ""}
+      <h2 class="nama‑produk">${item.nama}</h2>
+      <div>
+        <span class="harga‑sekarang">Rp ${Number(item.harga).toLocaleString('id‑ID')}</span>
+        <span class="harga‑lama">Rp ${Number(hargaAsli).toLocaleString('id‑ID')}</span>
+      </div>
+      <p class="info‑terjual">${item.terjual || 0} Terjual • Stok: ${item.stok || 0}</p>
+
+      <div class="box‑deskripsi">
+        <h4>Deskripsi Produk</h4>
+        <p>${item.deskripsi || "Tidak ada deskripsi"}</p>
+      </div>
+    `
+  }).catch((err)=>{
+    kontenDetail.innerHTML = `<p style="text‑align:center;padding:40px;color:red;">❌ Error: ${err.message}</p>`;
+  })
+}
+</script>
+
+<!-- Tombol Beli / Keranjang (nanti kita hubungkan ke keranjang.html) -->
+<div class="footer‑action">
+  <button class="btn‑keranjang" onclick="alert('✅ Ditambahkan ke Keranjang! (Nanti kita sambung ke database keranjang)')">
+    <i class="fas fa‑shopping‑cart"></i> Masukkan Keranjang
   </button>
-  <button class="btn-cart">
-    <i class="fas fa-shopping-cart"></i> Keranjang
+  <button class="btn‑beli" onclick="alert('✅ Langsung Beli (Nanti kita lanjutkan)')">
+    Beli Sekarang
   </button>
-  <button class="btn-buy">Beli Sekarang</button>
 </div>
-  
-<!-- Firebase SDK -->
-<script type="module" src="firebase-config.js"></script>
+
 </body>
 </html>
