@@ -95,6 +95,25 @@ button {
   font-size: 20px;
 }
 
+.cart-icon {
+  position:relative;
+  display:inline‑block;
+}
+.cart‑badge {
+  position:absolute;
+  top:‑8px;
+  right:‑8px;
+  background:#fff;
+  color:#ee4d2d;
+  font‑size:11px;
+  font‑weight:bold;
+  border‑radius:99px;
+  width:18px;
+  height:18px;
+  display:grid;
+  place‑items:center;
+}
+
 /* =====================================
    BANNER / SLIDER
 ===================================== */
