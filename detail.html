@@ -160,6 +160,26 @@ if(!idProduk){
     const item = snapshot.val();
     const hargaAsli = item.hargaAsli || (item.diskon ? Math.round(item.harga * 100 / (100 - item.diskon)) : item.harga);
 
+    // Tambah ke keranjang
+const btnKeranjang = document.getElementById("btnTambahKeranjang");
+btnKeranjang.onclick = function(){
+  const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+  const cekSudahAda = keranjangLama.find(x=>x.id === idProduk);
+  if(cekSudahAda){
+    cekSudahAda.jumlah += 1;
+  }else{
+    keranjangLama.push({
+      id: idProduk,
+      nama: item.nama,
+      harga: item.harga,
+      foto: item.foto,
+      jumlah: 1
+    })
+  }
+  localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
+  alert("✅ Berhasil dimasukkan ke Keranjang! Buka halaman Keranjang");
+}
+
     kontenDetail.innerHTML = `
       <img src="${item.foto}" alt="${item.nama}" class="detail-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
       ${item.diskon ? `<span class="diskon-badge">-${item.diskon}%</span>` : ""}
