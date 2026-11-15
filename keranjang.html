@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF‑8">
+  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
+  <meta name="theme‑color" content="#ee4d2d">
+  <title>Keranjang Belanja | Toko Baju Online</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+
+  <style>
+    * {
+      margin:0;
+      padding:0;
+      box‑sizing:border‑box;
+      font‑family:Arial, sans‑serif;
+    }
+    body {
+      background:#f5f5f5;
+      padding‑bottom:110px;
+    }
+    .header‑keranjang {
+      background:#ee4d2d;
+      color:white;
+      padding:14px;
+      display:flex;
+      align‑items:center;
+      gap:12px;
+      position:sticky;
+      top:0;
+      z‑index:99;
+    }
+    .header‑keranjang a {
+      color:white;
+      font‑size:20px;
+      text‑decoration:none;
+    }
+    .wrap‑keranjang {
+      padding:15px;
+    }
+    .item‑keranjang {
+      background:white;
+      border‑radius:8px;
+      padding:12px;
+      display:flex;
+      gap:10px;
+      margin‑bottom:10px;
+    }
+    .img‑keranjang {
+      width:80px;
+      height:80px;
+      object‑fit:contain;
+      border‑radius:6px;
+    }
+    .info‑item {
+      flex‑grow:1;
+    }
+    .nama‑item {
+      font‑weight:bold;
+      margin‑bottom:4px;
+    }
+    .harga‑item {
+      color:#ee4d2d;
+      font‑weight:bold;
+    }
+    .jumlah‑group {
+      display:flex;
+      gap:8px;
+      align‑items:center;
+      margin‑top:8px;
+    }
+    .btn‑min, .btn‑plus {
+      width:26px;
+      height:26px;
+      border:none;
+      border‑radius:4px;
+      background:#ddd;
+    }
+    .btn‑hapus {
+      border:none;
+      background:#ff4757;
+      color:white;
+      padding:4px 8px;
+      border‑radius:4px;
+    }
+    .kosong‑keranjang {
+      text‑align:center;
+      margin‑top:80px;
+      color:#888;
+    }
+    .footer‑total {
+      position:fixed;
+      bottom:55px;
+      left:0;
+      width:100%;
+      background:white;
+      padding:12px 15px;
+      display:flex;
+      justify‑content:space‑between;
+      align‑items:center;
+      border‑top:1px solid #ddd;
+    }
+    .total‑harga {
+      font‑size:18px;
+      font‑weight:bold;
+      color:#ee4d2d;
+    }
+    .btn‑checkout {
+      background:#ee4d2d;
+      color:white;
+      border:none;
+      padding:10px 18px;
+      border‑radius:6px;
+    }
+    .bottom‑nav {
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      background:white;
+      display:flex;
+      justify‑content:space‑around;
+      padding:8px 0;
+      border‑top:1px solid #ddd;
+    }
+    .bottom‑nav a {
+      text‑align:center;
+      text‑decoration:none;
+      color:#666;
+      font‑size:12px;
+    }
+    .bottom‑nav a.active {
+      color:#ee4d2d;
+    }
+  </style>
+</head>
+<body>
+  <div class="header‑keranjang">
+    <a href="index.html"><i class="fas fa‑arrow‑left"></i></a>
+    <h3>Keranjang Belanja</h3>
+  </div>
+
+  <div class="wrap‑keranjang" id="daftarKeranjang">
+    <!-- Isi keranjang akan dimuat disini -->
+  </div>
+
+  <div class="footer‑total" id="boxTotal">
+    <div>Total: <span class="total‑harga" id="textTotal">Rp 0</span></div>
+    <button class="btn‑checkout" onclick="alert('✅ Checkout (Nanti kita lanjut ke halaman pesanan)')">Checkout</button>
+  </div>
+
+  <!-- NAV BAWAH -->
+  <nav class="bottom‑nav">
+    <a href="index.html">
+      <i class="fas fa‑home"></i>
+      <span>Beranda</span>
+    </a>
+    <a href="produk.html">
+      <i class="fas fa‑th‑large"></i>
+      <span>Kategori</span>
+    </a>
+    <a href="keranjang.html" class="active">
+      <i class="fas fa‑shopping‑cart"></i>
+      <span>Keranjang</span>
+    </a>
+    <a href="#" onclick="bukaAkun(); return false;">
+      <i class="fas fa‑user"></i>
+      <span>Akun</span>
+    </a>
+  </nav>
+
+<script>
+// Fungsi buka akun (sama persis yang ada di index)
+function bukaAkun(){
+  alert("Halaman Akun");
+}
+
+// Muat keranjang dari localStorage
+function muatKeranjang(){
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+  const wadah = document.getElementById("daftarKeranjang");
+  const boxTotal = document.getElementById("boxTotal");
+
+  if(keranjang.length === 0){
+    wadah.innerHTML = `<div class="kosong‑keranjang"><i class="fas fa‑shopping‑cart" style="font‑size:60px"></i><p>Keranjangmu kosong</p><a href="index.html">Belanja Sekarang</a></div>`;
+    boxTotal.style.display = "none";
+    return;
+  }
+  boxTotal.style.display = "flex";
+  let total = 0;
+  wadah.innerHTML = "";
+  keranjang.forEach((item, indeks)=>{
+    const subTotal = item.harga * item.jumlah;
+    total += subTotal;
+    wadah.innerHTML += `
+    <div class="item‑keranjang">
+      <img src="${item.foto}" class="img‑keranjang">
+      <div class="info‑item">
+        <div class="nama‑item">${item.nama}</div>
+        <div class="harga‑item">Rp ${Number(item.harga).toLocaleString('id‑ID')}</div>
+        <div class="jumlah‑group">
+          <button class="btn‑min" onclick="kurangi(${indeks})">-</button>
+          <span>${item.jumlah}</span>
+          <button class="btn‑plus" onclick="tambah(${indeks})">+</button>
+          <button class="btn‑hapus" onclick="hapusItem(${indeks})">Hapus</button>
+        </div>
+      </div>
+    </div>
+    `
+  })
+  document.getElementById("textTotal").innerText = "Rp " + total.toLocaleString('id‑ID');
+}
+
+function tambah(indeks){
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko"));
+  keranjang[indeks].jumlah += 1;
+  localStorage.setItem("keranjangToko", JSON.stringify(keranjang));
+  muatKeranjang();
+}
+function kurangi(indeks){
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko"));
+  if(keranjang[indeks].jumlah > 1){
+    keranjang[indeks].jumlah -= 1;
+    localStorage.setItem("keranjangToko", JSON.stringify(keranjang));
+    muatKeranjang();
+  }
+}
+function hapusItem(indeks){
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko"));
+  keranjang.splice(indeks, 1);
+  localStorage.setItem("keranjangToko", JSON.stringify(keranjang));
+  muatKeranjang();
+}
+
+// Panggil saat halaman dibuka
+muatKeranjang();
+</script>
+</body>
+</html>
