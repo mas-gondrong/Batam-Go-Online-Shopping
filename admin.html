@@ -836,6 +836,50 @@ onValue(pesananRef, snapshot=>{
     `
   })
 })
+
+  // ADMIN UBAH STATUS PESANAN
+import { db } from './firebase‑config.js';
+import { ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+
+const wadahPesananAdmin = document.getElementById("wadahPesananAdmin");
+const pesananAdminRef = ref(db, "pesanan");
+
+onValue(pesananAdminRef, (snapshot)=>{
+  const data = snapshot.val();
+  wadahPesananAdmin.innerHTML = "";
+  if(!data){
+    wadahPesananAdmin.innerHTML = "<p>Belum ada pesanan masuk</p>";
+    return;
+  }
+  const listPesanan = Object.entries(data).map(([id, val])=>({id, ...val}));
+  listPesanan.reverse();
+
+  listPesanan.forEach(pesanan=>{
+    wadahPesananAdmin.innerHTML += `
+    <div style="background:white; padding:12px; margin:8px 0; border‑radius:8px;">
+      <p><strong>Penerima:</strong> ${pesanan.namaPenerima}</p>
+      <p><strong>HP:</strong> ${pesanan.noHp}</p>
+      <p><strong>Alamat:</strong> ${pesanan.alamat}</p>
+      <p><strong>Total:</strong> Rp ${Number(pesanan.totalBayar).toLocaleString('id‑ID')}</p>
+      <p><strong>Tanggal:</strong> ${pesanan.tanggal}</p>
+      <label>Ubah Status:</label>
+      <select onchange="ubahStatus('${pesanan.id}', this.value)">
+        <option value="Menunggu Diproses" ${pesanan.status==="Menunggu Diproses"?"selected":""}>Menunggu Diproses</option>
+        <option value="Sedang Dikirim" ${pesanan.status==="Sedang Dikirim"?"selected":""}>Sedang Dikirim</option>
+        <option value="Selesai" ${pesanan.status==="Selesai"?"selected":""}>Selesai</option>
+      </select>
+    </div>
+    `
+  })
+})
+
+// Fungsi ubah status (taruh di luar script module / di script biasa)
+function ubahStatus(idPesanan, statusBaru){
+  update(ref(db, "pesanan/"+idPesanan), {
+    status: statusBaru
+  })
+  alert("✅ Status pesanan berhasil diubah!");
+}
 </script>
 
 <!-- BLOK 3 GANTI TAB -->
