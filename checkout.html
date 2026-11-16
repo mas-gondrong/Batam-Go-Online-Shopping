@@ -151,18 +151,13 @@ const subtotalText = document.getElementById("subtotalText");
 const totalAkhirText = document.getElementById("totalAkhirText");
 const btnKirim = document.getElementById("btnKirimPesanan");
 
-// NYALAKAN TOMBOL DULU (JANGAN MATI)
-btnKirim.disabled = false;
-
-// Muat keranjang dari localStorage
+// Muat keranjang
 function muatCheckout(){
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
-  console.log("✅ ISI KERANJANG:", keranjang);
-
   if(keranjang.length === 0){
     wadahBarang.innerText = "Keranjang kosong, silakan belanja dulu";
     subtotalText.innerText = "Rp 0";
-    totalAkhirText.innerText = "Rp 15.000";
+    totalAkhirText.innerText = "Rp 0";
     return;
   }
   let subtotal = 0;
@@ -185,15 +180,16 @@ function muatCheckout(){
   totalAkhirText.innerText = "Rp " + totalAkhir.toLocaleString('id-ID');
 }
 
-// Fungsi Klik Tombol
-btnKirim.onclick = async function(){
+// KLIK TOMBOL KIRIM
+btnKirim.addEventListener("click", async function(){
   const nama = document.getElementById("namaPenerima").value.trim();
   const hp = document.getElementById("noHp").value.trim();
   const alamat = document.getElementById("alamatLengkap").value.trim();
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
 
+  // Validasi
   if(!nama || !hp || !alamat){
-    alert("❌ Isi semua data alamat penerima");
+    alert("❌ Isi Nama, Nomor HP, Alamat lengkap");
     return;
   }
   if(keranjang.length === 0){
@@ -217,16 +213,19 @@ btnKirim.onclick = async function(){
   await push(ref(db, "pesanan"), pesananData);
   localStorage.removeItem("keranjangToko");
 
+  // ✅ TOAST NOTIF BERHASIL (INI YANG KAMU MAU)
   const toast = document.getElementById("toastCheckout");
   toast.style.display = "block";
   setTimeout(()=>{
     toast.style.display = "none";
     window.location.href = "index.html";
   },2500)
-}
+})
 
-// Jalankan fungsi muat
 muatCheckout();
-</script>
+    </script>
+
+  <div class="toast-sukses" id="toastCheckout">✅ Pesanan Berhasil Dikirim!</div>
 </body>
 </html>
+
