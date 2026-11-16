@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF‑8">
-  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
-  <meta name="theme‑color" content="#ee4d2d">
-  <title>Riwayat Pesanan | Toko Baju Online</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ee4d2d">
+  <title>Riwayat Pesanan Saya | Toko Baju Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     * {
       margin:0;
       padding:0;
-      box‑sizing:border‑box;
-      font‑family:Arial, sans‑serif;
+      box-sizing:border-box;
+      font-family:Arial, sans‑serif;
     }
     body {
       background:#f5f5f5;
@@ -84,14 +84,13 @@
   </div>
 
   <div class="wrap" id="kontenRiwayat">
-    <!-- ISI RIWAYAT DIMUAT OLEH JS -->
+    <p style="text‑align:center;">Memuat data...</p>
   </div>
 
 <script type="module">
 import { db } from './firebase‑config.js';
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
 
-// Ambil daftar pesanan
 const pesananRef = ref(db, "pesanan");
 const kontenRiwayat = document.getElementById("kontenRiwayat");
 
@@ -104,37 +103,37 @@ onValue(pesananRef, (snapshot)=>{
     return;
   }
 
-  // Ubah objek ke array
-  const listPesanan = Object.values(data);
-  // Urutkan dari yang TERBARU di atas
-  listPesanan.reverse();
+  // Ubah objek ke array + simpan key ID pesanan
+  const listPesanan = Object.entries(data).map(([id, value])=>({id, ...value}));
+  listPesanan.reverse(); // Terbaru di paling atas
 
   listPesanan.forEach((pesan)=>{
-    // Warna status
     let kelasStatus = "menunggu";
     if(pesan.status === "Sedang Dikirim") kelasStatus = "dikirim";
     if(pesan.status === "Selesai") kelasStatus = "selesai";
 
     let htmlBarang = "";
-    pesan.barang.forEach(brg=>{
-      htmlBarang += `
-      <div class="item‑riwayat">
-        <img src="${brg.foto}">
-        <div>
-          <div>${brg.nama}</div>
-          <div>Qty: ${brg.jumlah}</div>
+    if(pesan.barang && Array.isArray(pesan.barang)){
+      pesan.barang.forEach(brg=>{
+        htmlBarang += `
+        <div class="item‑riwayat">
+          <img src="${brg.foto}">
+          <div>
+            <div>${brg.nama}</div>
+            <div>Qty: ${brg.jumlah}</div>
+          </div>
         </div>
-      </div>
-      `
-    })
+        `
+      })
+    }
 
     kontenRiwayat.innerHTML += `
     <div class="card‑pesanan">
       <span class="status ${kelasStatus}">${pesan.status}</span>
-      <div><small>Tanggal: ${pesan.tanggal}</small></div>
+      <div><small>Tanggal: ${pesan.tanggal || "‑"}</small></div>
       ${htmlBarang}
       <hr style="margin:8px 0">
-      <div><strong>Total Bayar: Rp ${pesan.totalBayar.toLocaleString('id‑ID')}</strong></div>
+      <div><strong>Total Bayar: Rp ${Number(pesan.totalBayar).toLocaleString('id‑ID')}</strong></div>
     </div>
     `
   })
