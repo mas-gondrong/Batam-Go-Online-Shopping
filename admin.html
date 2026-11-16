@@ -791,50 +791,68 @@ onValue(pesananRef, snapshot=>{
   })
 })
 
-  // ADMIN UBAH STATUS PESANAN
+  // ADMIN: Baca + Ubah Status Pesanan
 import { db } from './firebase‑config.js';
 import { ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
 
 const wadahPesananAdmin = document.getElementById("wadahPesananAdmin");
 const pesananAdminRef = ref(db, "pesanan");
 
+// Muat daftar pesanan
 onValue(pesananAdminRef, (snapshot)=>{
   const data = snapshot.val();
   wadahPesananAdmin.innerHTML = "";
+
   if(!data){
-    wadahPesananAdmin.innerHTML = "<p>Belum ada pesanan masuk</p>";
+    wadahPesananAdmin.innerHTML = "<p style='text‑align:center;padding:20px;'>Belum ada pesanan masuk</p>";
     return;
   }
-  const listPesanan = Object.entries(data).map(([id, val])=>({id, ...val}));
-  listPesanan.reverse();
 
-  listPesanan.forEach(pesanan=>{
+  // Ambil ID + data pesanan
+  const listPesanan = Object.entries(data).map(([id, val])=>({id, ...val}));
+  listPesanan.reverse(); // Pesanan terbaru di atas
+
+  listPesanan.forEach((pesanan)=>{
+    let kelasStatus = "";
+    if(pesanan.status === "Menunggu Diproses") kelasStatus = "menunggu";
+    if(pesanan.status === "Sedang Dikirim") kelasStatus = "proses";
+    if(pesanan.status === "Selesai") kelasStatus = "selesai";
+
     wadahPesananAdmin.innerHTML += `
-    <div style="background:white; padding:12px; margin:8px 0; border‑radius:8px;">
-      <p><strong>Penerima:</strong> ${pesanan.namaPenerima}</p>
-      <p><strong>HP:</strong> ${pesanan.noHp}</p>
-      <p><strong>Alamat:</strong> ${pesanan.alamat}</p>
-      <p><strong>Total:</strong> Rp ${Number(pesanan.totalBayar).toLocaleString('id‑ID')}</p>
-      <p><strong>Tanggal:</strong> ${pesanan.tanggal}</p>
-      <label>Ubah Status:</label>
-      <select onchange="ubahStatus('${pesanan.id}', this.value)">
-        <option value="Menunggu Diproses" ${pesanan.status==="Menunggu Diproses"?"selected":""}>Menunggu Diproses</option>
-        <option value="Sedang Dikirim" ${pesanan.status==="Sedang Dikirim"?"selected":""}>Sedang Dikirim</option>
-        <option value="Selesai" ${pesanan.status==="Selesai"?"selected":""}>Selesai</option>
-      </select>
+    <div class="order‑card">
+      <div class="order‑header">
+        <span class="order‑id">ID: ${pesanan.id}</span>
+        <span class="order‑status ${kelasStatus}">${pesanan.status}</span>
+      </div>
+      <div style="font‑size:13px; margin‑bottom:8px;">
+        <strong>Pembeli:</strong> ${pesanan.namaPenerima}<br>
+        <strong>HP:</strong> ${pesanan.noHp}<br>
+        <strong>Alamat:</strong> ${pesanan.alamat}<br>
+        <strong>Total:</strong> Rp ${Number(pesanan.totalBayar).toLocaleString('id‑ID')}
+      </div>
+      <div style="display:flex;gap:8px;flex‑wrap:wrap;">
+        <button class="btn btn‑sm btn‑warning" onclick="adminUbahStatus('${pesanan.id}','Menunggu Diproses')">Menunggu</button>
+        <button class="btn btn‑sm btn‑primary" onclick="adminUbahStatus('${pesanan.id}','Sedang Dikirim')">Sedang Dikirim</button>
+        <button class="btn btn‑sm btn‑success" onclick="adminUbahStatus('${pesanan.id}','Selesai')">Tandai Selesai</button>
+      </div>
     </div>
     `
   })
 })
-
-// Fungsi ubah status (taruh di luar script module / di script biasa)
-function ubahStatus(idPesanan, statusBaru){
-  update(ref(db, "pesanan/"+idPesanan), {
-    status: statusBaru
-  })
-  alert("✅ Status pesanan berhasil diubah!");
-}
 </script>
+
+  <script>
+function adminUbahStatus(idPesanan, statusBaru){
+  import("https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js").then(({ref, update})=>{
+    import("./firebase‑config.js").then(({db})=>{
+      update(ref(db, "pesanan/"+idPesanan), {
+        status: statusBaru
+      })
+      alert("✅ Status pesanan berhasil di perbarui!");
+    })
+  })
+}
+  </script>
 
 <!-- BLOK 3 GANTI TAB -->
 <script>
