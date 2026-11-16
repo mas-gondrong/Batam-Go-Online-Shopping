@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toko-baju-v35';
+const CACHE_NAME = 'toko-baju-v36';
 const ASSETS = [
   '/',
   '/index.html',
