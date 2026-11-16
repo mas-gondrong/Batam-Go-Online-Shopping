@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ee4d2d">
+  <meta charset="UTF‑8">
+  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
+  <meta name="theme‑color" content="#ee4d2d">
   <title>Riwayat Pesanan Saya | Toko Baju Online</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
   <style>
     * {
       margin:0;
       padding:0;
-      box-sizing:border-box;
-      font-family:Arial, sans‑serif;
+      box‑sizing:border‑box;
+      font‑family:Arial, sans‑serif;
     }
     body {
       background:#f5f5f5;
@@ -103,9 +103,8 @@ onValue(pesananRef, (snapshot)=>{
     return;
   }
 
-  // Ubah objek ke array + simpan key ID pesanan
   const listPesanan = Object.entries(data).map(([id, value])=>({id, ...value}));
-  listPesanan.reverse(); // Terbaru di paling atas
+  listPesanan.reverse();
 
   listPesanan.forEach((pesan)=>{
     let kelasStatus = "menunggu";
@@ -113,8 +112,10 @@ onValue(pesananRef, (snapshot)=>{
     if(pesan.status === "Selesai") kelasStatus = "selesai";
 
     let htmlBarang = "";
-    if(pesan.barang && Array.isArray(pesan.barang)){
-      pesan.barang.forEach(brg=>{
+    // ✅ PENANGANAN JIKA BARANG BUKAN ARRAY (penyebab stuck memuat data)
+    if(pesan.barang){
+      const daftarBarang = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang);
+      daftarBarang.forEach(brg=>{
         htmlBarang += `
         <div class="item‑riwayat">
           <img src="${brg.foto}">
@@ -125,6 +126,8 @@ onValue(pesananRef, (snapshot)=>{
         </div>
         `
       })
+    } else {
+      htmlBarang = `<p style="color:#999">Data barang kosong</p>`
     }
 
     kontenRiwayat.innerHTML += `
