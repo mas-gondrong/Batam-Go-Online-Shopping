@@ -9,92 +9,102 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
 
   <style>
-    * {
-      margin:0;
-      padding:0;
-      box‑sizing:border‑box;
-      font‑family:Arial, sans‑serif;
-    }
-    body {
-      background:#f5f5f5;
-      padding‑bottom:90px;
-    }
-    .header‑checkout {
-      background:#ee4d2d;
-      color:white;
-      padding:14px;
-      display:flex;
-      align‑items:center;
-      gap:12px;
-      position:sticky;
-      top:0;
-      z‑index:99;
-    }
-    .header‑checkout a {
-      color:white;
-      font‑size:20px;
-      text‑decoration:none;
-    }
-    .wrap {
-      padding:15px;
-    }
-    .box {
-      background:white;
-      border‑radius:8px;
-      padding:14px;
-      margin‑bottom:12px;
-    }
-    .box h4 {
-      margin‑bottom:10px;
-    }
-    input, textarea {
-      width:100%;
-      padding:10px;
-      margin‑bottom:8px;
-      border:1px solid #ddd;
-      border‑radius:6px;
-    }
-    .item‑checkout {
-      display:flex;
-      gap:10px;
-      margin‑bottom:8px;
-    }
-    .item‑checkout img {
-      width:60px;
-      height:60px;
-      object‑fit:contain;
-    }
-    .row‑harga {
-      display:flex;
-      justify‑content:space‑between;
-      margin:6px 0;
-    }
-    .total‑akhir {
-      font‑size:18px;
-      font‑weight:bold;
-      color:#ee4d2d;
-    }
-    .btn‑pesan {
-      width:100%;
-      background:#ee4d2d;
-      color:white;
-      border:none;
-      padding:14px;
-      border‑radius:8px;
-      font‑size:16px;
-    }
-    .toast‑sukses{
-      position:fixed;
-      bottom:120px;
-      left:50%;
-      transform:translateX(-50%);
-      background‑color:#22c55e;
-      color:#ffffff;
-      padding:14px 22px;
-      border‑radius:8px;
-      z‑index:9999;
-      display:none;
-    }
+  * {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, sans‑serif;
+}
+body {
+  background:#f5f5f5;
+  padding‑bottom:90px;
+}
+.header‑checkout {
+  background:#ee4d2d;
+  color:white;
+  padding:14px;
+  display:flex;
+  align‑items:center;
+  gap:12px;
+  position:sticky;
+  top:0;
+  z‑index:99;
+}
+.header‑checkout a {
+  color:white;
+  font‑size:20px;
+  text‑decoration:none;
+}
+.wrap {
+  padding:15px;
+}
+.box {
+  background:white;
+  border‑radius:8px;
+  padding:14px;
+  margin‑bottom:12px;
+}
+.box h4 {
+  margin‑bottom:10px;
+}
+input, textarea {
+  width:100%;
+  padding:10px;
+  margin‑bottom:8px;
+  border:1px solid #ddd;
+  border‑radius:6px;
+}
+
+/* ✅ PERBAIKAN GAMBAR CHECKOUT (INI YANG PERBAIKI FOTO MELEBAR) */
+.item‑checkout {
+  display:flex;
+  gap:10px;
+  margin‑bottom:8px;
+  align‑items:center;
+}
+.item‑checkout img {
+  width:70px;
+  height:70px;
+  object‑fit:cover;
+  border‑radius:6px;
+  flex‑shrink:0; /* JANGAN GAMBAR DIPERKECIL / MEMELEBAR */
+}
+
+.row‑harga {
+  display:flex;
+  justify‑content:space‑between;
+  margin:6px 0;
+}
+.total‑akhir {
+  font‑size:18px;
+  font‑weight:bold;
+  color:#ee4d2d;
+}
+.btn‑pesan {
+  width:100%;
+  background:#ee4d2d;
+  color:white;
+  border:none;
+  padding:14px;
+  border‑radius:8px;
+  font‑size:16px;
+}
+
+/* ✅ CSS TOAST (WAJIB ADA UNTUK NOTIF HIJAU) */
+#toastCheckout{
+  position:fixed;
+  bottom:130px;
+  left:50%;
+  transform:translateX(-50%);
+  background‑color:#22c55e;
+  color:#ffffff;
+  padding:14px 22px;
+  border‑radius:8px;
+  z‑index:9999;
+  display:none;
+  max‑width:90%;
+  text‑align:center;
+}
   </style>
 </head>
 <body>
@@ -213,19 +223,18 @@ btnKirim.addEventListener("click", async function(){
   await push(ref(db, "pesanan"), pesananData);
   localStorage.removeItem("keranjangToko");
 
-  // ✅ TOAST NOTIF BERHASIL (INI YANG KAMU MAU)
+  // === TOAST ===
   const toast = document.getElementById("toastCheckout");
   toast.style.display = "block";
+
   setTimeout(()=>{
     toast.style.display = "none";
     window.location.href = "index.html";
-  },2500)
-})
+  }, 3000); // DITAMBAH JADI 3 DETIK (lebih lama terlihat)
 
 muatCheckout();
     </script>
-
-  <div class="toast-sukses" id="toastCheckout">✅ Pesanan Berhasil Dikirim!</div>
+ <div id="toastCheckout">✅ Pesanan Berhasil Dikirim!</div>
 </body>
 </html>
 
