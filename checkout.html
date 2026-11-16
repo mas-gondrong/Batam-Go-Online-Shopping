@@ -142,24 +142,27 @@
 <!-- FIREBASE -->
 <script type="module" src="firebase‑config.js"></script>
 <script type="module">
-import { db } from './firebase‑config.js';
-import { ref, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
-
+import { db } from './firebase-config.js';
+import { ref, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 const ONGKIR = 15000;
 const wadahBarang = document.getElementById("daftarBarangCheckout");
 const subtotalText = document.getElementById("subtotalText");
 const totalAkhirText = document.getElementById("totalAkhirText");
+const btnKirim = document.getElementById("btnKirimPesanan");
 
+// NYALAKAN TOMBOL DULU (JANGAN MATI)
+btnKirim.disabled = false;
 
 // Muat keranjang dari localStorage
 function muatCheckout(){
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
-  console.log("ISI KERANJANG:", keranjang); // CEK DI CONSOLE
-
+  console.log("✅ ISI KERANJANG:", keranjang);
 
   if(keranjang.length === 0){
     wadahBarang.innerText = "Keranjang kosong, silakan belanja dulu";
+    subtotalText.innerText = "Rp 0";
+    totalAkhirText.innerText = "Rp 15.000";
     return;
   }
   let subtotal = 0;
@@ -182,13 +185,12 @@ function muatCheckout(){
   totalAkhirText.innerText = "Rp " + totalAkhir.toLocaleString('id-ID');
 }
 
-// Kirim pesanan ke Firebase
-document.getElementById("btnKirimPesanan").onclick = async function(){
+// Fungsi Klik Tombol
+btnKirim.onclick = async function(){
   const nama = document.getElementById("namaPenerima").value.trim();
   const hp = document.getElementById("noHp").value.trim();
   const alamat = document.getElementById("alamatLengkap").value.trim();
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
-
 
   if(!nama || !hp || !alamat){
     alert("❌ Isi semua data alamat penerima");
@@ -198,7 +200,6 @@ document.getElementById("btnKirimPesanan").onclick = async function(){
     alert("❌ Keranjang kosong, kembali belanja");
     return;
   }
-
 
   const subtotal = keranjang.reduce((sum,item)=> sum + (Number(item.harga)*Number(item.jumlah)), 0);
   const pesananData = {
@@ -213,10 +214,8 @@ document.getElementById("btnKirimPesanan").onclick = async function(){
     tanggal: new Date().toLocaleString("id-ID")
   }
 
-
   await push(ref(db, "pesanan"), pesananData);
   localStorage.removeItem("keranjangToko");
-
 
   const toast = document.getElementById("toastCheckout");
   toast.style.display = "block";
@@ -226,10 +225,8 @@ document.getElementById("btnKirimPesanan").onclick = async function(){
   },2500)
 }
 
-
-// JALANKAN SAAT HALAMAN DIBUKA
+// Jalankan fungsi muat
 muatCheckout();
-  </script>
+</script>
 </body>
 </html>
-
