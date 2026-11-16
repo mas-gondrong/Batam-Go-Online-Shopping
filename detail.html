@@ -165,72 +165,72 @@ if(!idProduk){
 }else{
 
   const singleRef = ref(db, `produk/${idProduk}`);
-get(singleRef).then((snapshot)=>{
-  console.log("✅ Dapat data detail");
-  if(!snapshot.exists()){
-    kontenDetail.innerHTML = `<p class="loading-text">❌ Produk tidak ditemukan di Firebase</p>`;
-    return;
-  }
-  const item = snapshot.val();
-  const hargaAsli = item.hargaAsli || (item.diskon ? Math.round(item.harga * 100 / (100 - item.diskon)) : item.harga);
+  get(singleRef).then((snapshot)=>{
+    console.log("✅ Dapat data detail");
+    if(!snapshot.exists()){
+      kontenDetail.innerHTML = `<p class="loading-text">❌ Produk tidak ditemukan di Firebase</p>`;
+      return;
+    }
+    const item = snapshot.val();
+    const hargaAsli = item.hargaAsli || (item.diskon ? Math.round(item.harga * 100 / (100 - item.diskon)) : item.harga);
 
-  // ISI KONTEN DETAIL DULU (URUTAN BENAR)
-  kontenDetail.innerHTML = `
-    <img src="${item.foto}" alt="${item.nama}" class="detail-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
-    ${item.diskon ? `<span class="diskon-badge">-${item.diskon}%</span>` : ""}
-    <h2 class="nama-produk">${item.nama}</h2>
-    <div>
-      <span class="harga-sekarang">Rp ${Number(item.harga).toLocaleString('id-ID')}</span>
-      <span class="harga-lama">Rp ${Number(hargaAsli).toLocaleString('id-ID')}</span>
-    </div>
-    <p class="info-terjual">${item.terjual || 0} Terjual • Stok: ${item.stok || 0}</p>
+    // ISI KONTEN DETAIL
+    kontenDetail.innerHTML = `
+      <img src="${item.foto}" alt="${item.nama}" class="detail-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
+      ${item.diskon ? `<span class="diskon-badge">-${item.diskon}%</span>` : ""}
+      <h2 class="nama-produk">${item.nama}</h2>
+      <div>
+        <span class="harga-sekarang">Rp ${Number(item.harga).toLocaleString('id-ID')}</span>
+        <span class="harga-lama">Rp ${Number(hargaAsli).toLocaleString('id-ID')}</span>
+      </div>
+      <p class="info-terjual">${item.terjual || 0} Terjual • Stok: ${item.stok || 0}</p>
 
-    <div class="box-deskripsi">
-      <h4>Deskripsi Produk</h4>
-      <p>${item.deskripsi || "Tidak ada deskripsi"}</p>
-    </div>
-  `
+      <div class="box-deskripsi">
+        <h4>Deskripsi Produk</h4>
+        <p>${item.deskripsi || "Tidak ada deskripsi"}</p>
+      </div>
+    `
 
-  // ✅ HANYA SATU onclick (GABUNGKAN SEMUA: keranjang + updateBadge + Toast)
-  const btnKeranjang = document.getElementById("btnTambahKeranjang");
-  btnKeranjang.onclick = function(){
-    btnKeranjang.disabled = true;
-    btnKeranjang.innerText = "Sedang Menambahkan...";
+    // ✅ HAPUS updateBadgeKeranjang()
+    const btnKeranjang = document.getElementById("btnTambahKeranjang");
+    btnKeranjang.onclick = function(){
+      btnKeranjang.disabled = true;
+      btnKeranjang.innerText = "Sedang Menambahkan...";
 
-    const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
-    const cekSudahAda = keranjangLama.find(x=>x.id === idProduk);
+      const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+      const cekSudahAda = keranjangLama.find(x=>x.id === idProduk);
 
-    if(cekSudahAda){
-      cekSudahAda.jumlah += 1;
-    }else{
-      keranjangLama.push({
-        id: idProduk,
-        nama: item.nama,
-        harga: Number(item.harga),
-        foto: item.foto,
-        jumlah: 1
-      })
+      if(cekSudahAda){
+        cekSudahAda.jumlah += 1;
+      }else{
+        keranjangLama.push({
+          id: idProduk,
+          nama: item.nama,
+          harga: Number(item.harga),
+          foto: item.foto,
+          jumlah: 1
+        })
+      }
+
+      localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
+
+      // 👉 BARIS INI DIHAPUS: updateBadgeKeranjang();
+
+      // ✅ TOAST NOTIFIKASI
+      const toast = document.getElementById("toastSukses");
+      toast.style.display = "block";
+      setTimeout(()=>{
+        toast.style.display = "none";
+        btnKeranjang.disabled = false;
+        btnKeranjang.innerHTML = `<i class="fas fa-shopping-cart"></i> Masukkan Keranjang`;
+      }, 2000);
     }
 
-    localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
-
-    // ✅ JANGAN LUPA updateBadgeKeranjang() untuk angka di ikon keranjang
-    updateBadgeKeranjang();
-
-    // ✅ TOAST NOTIFIKASI
-    const toast = document.getElementById("toastSukses");
-    toast.style.display = "block";
-    setTimeout(()=>{
-      toast.style.display = "none";
-      btnKeranjang.disabled = false;
-      btnKeranjang.innerHTML = `<i class="fas fa-shopping-cart"></i> Masukkan Keranjang`;
-    }, 2000);
-  }
-
-}).catch((err)=>{
-  console.error("❌ Error detail:", err);
-  kontenDetail.innerHTML = `<p class="loading-text" style="color:red;">❌ Error: ${err.message}</p>`;
-})
+  }).catch((err)=>{
+    console.error("❌ Error detail:", err);
+    kontenDetail.innerHTML = `<p class="loading-text" style="color:red;">❌ Error: ${err.message}</p>`;
+  })
+                                         }
 </script>
 
 <!-- Tombol Aksi -->
