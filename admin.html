@@ -547,7 +547,12 @@
        TAB 3: DAFTAR PESANAN
        ===================================== -->
   <div class="tab-content" id="tab-pesanan">
-    <div class="order-card">
+    <div id="tabPesanan" class="tab‑content">
+  <h3>Daftar Pesanan Pembeli</h3>
+  <div id="wadahPesananAdmin"></div>
+    </div>
+    
+        <div class="order-card">
       <div class="order-header">
         <span class="order-id">#ORD-20261104-001</span>
         <span class="order-status proses">Diproses</span>
@@ -806,6 +811,31 @@ function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKA
       })
     }
   })
+
+  import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+const pesananRef = ref(db, "pesanan");
+onValue(pesananRef, snapshot=>{
+  const wadah = document.getElementById("wadahPesananAdmin");
+  const data = snapshot.val();
+  if(!data){
+    wadah.innerText = "<p style='text‑align:center;'>Belum ada pesanan masuk</p>";
+    return;
+  }
+  const listPesanan = Object.entries(data);
+  wadah.innerHTML = "";
+  listPesanan.forEach(([id, psn])=>{
+    wadah.innerHTML += `
+    <div style="background:white;padding:12px;margin:8px 0;border‑radius:8px;">
+      <p><strong>Nama:</strong> ${psn.namaPenerima}</p>
+      <p><strong>HP:</strong> ${psn.noHp}</p>
+      <p><strong>Alamat:</strong> ${psn.alamat}</p>
+      <p><strong>Total Bayar:</strong> Rp ${Number(psn.totalBayar).toLocaleString('id‑ID')}</p>
+      <p><strong>Status:</strong> ${psn.status}</p>
+      <p><strong>Tanggal:</strong> ${psn.tanggal}</p>
+    </div>
+    `
+  })
+})
 </script>
 
 <!-- BLOK 3 GANTI TAB -->
