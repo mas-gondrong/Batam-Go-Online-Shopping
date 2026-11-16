@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial‑scale=1.0">
+  <meta name="theme‑color" content="#ee4d2d">
+  <title>Checkout Pesanan | Toko Baju Online</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+
+  <style>
+    * {
+      margin:0;
+      padding:0;
+      box‑sizing:border‑box;
+      font‑family:Arial, sans‑serif;
+    }
+    body {
+      background:#f5f5f5;
+      padding‑bottom:90px;
+    }
+    .header‑checkout {
+      background:#ee4d2d;
+      color:white;
+      padding:14px;
+      display:flex;
+      align‑items:center;
+      gap:12px;
+      position:sticky;
+      top:0;
+      z‑index:99;
+    }
+    .header‑checkout a {
+      color:white;
+      font‑size:20px;
+      text‑decoration:none;
+    }
+    .wrap {
+      padding:15px;
+    }
+    .box {
+      background:white;
+      border‑radius:8px;
+      padding:14px;
+      margin‑bottom:12px;
+    }
+    .box h4 {
+      margin‑bottom:10px;
+    }
+    input, textarea {
+      width:100%;
+      padding:10px;
+      margin‑bottom:8px;
+      border:1px solid #ddd;
+      border‑radius:6px;
+    }
+    .item‑checkout {
+      display:flex;
+      gap:10px;
+      margin‑bottom:8px;
+    }
+    .item‑checkout img {
+      width:60px;
+      height:60px;
+      object‑fit:contain;
+    }
+    .row‑harga {
+      display:flex;
+      justify‑content:space‑between;
+      margin:6px 0;
+    }
+    .total‑akhir {
+      font‑size:18px;
+      font‑weight:bold;
+      color:#ee4d2d;
+    }
+    .btn‑pesan {
+      width:100%;
+      background:#ee4d2d;
+      color:white;
+      border:none;
+      padding:14px;
+      border‑radius:8px;
+      font‑size:16px;
+    }
+    .toast‑sukses{
+      position:fixed;
+      bottom:120px;
+      left:50%;
+      transform:translateX(-50%);
+      background‑color:#22c55e;
+      color:#ffffff;
+      padding:14px 22px;
+      border‑radius:8px;
+      z‑index:9999;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header‑checkout">
+    <a href="keranjang.html"><i class="fas fa‑arrow‑left"></i></a>
+    <h3>Checkout Pesanan</h3>
+  </div>
+
+  <div class="wrap">
+    <!-- ALAMAT PENERIMA -->
+    <div class="box">
+      <h4>Alamat Penerima</h4>
+      <input type="text" id="namaPenerima" placeholder="Nama Lengkap">
+      <input type="text" id="noHp" placeholder="Nomor HP">
+      <textarea id="alamatLengkap" rows="3" placeholder="Alamat lengkap (Jalan, RT RW, Kota)"></textarea>
+    </div>
+
+    <!-- DAFTAR BARANG -->
+    <div class="box">
+      <h4>Daftar Barang</h4>
+      <div id="daftarBarangCheckout"></div>
+    </div>
+
+    <!-- RINCIAN BIAYA -->
+    <div class="box">
+      <div class="row‑harga">
+        <span>Subtotal</span>
+        <span id="subtotalText">Rp 0</span>
+      </div>
+      <div class="row‑harga">
+        <span>Ongkir</span>
+        <span id="ongkirText">Rp 15.000</span>
+      </div>
+      <div class="row‑harga total‑akhir">
+        <span>Total Bayar</span>
+        <span id="totalAkhirText">Rp 0</span>
+      </div>
+    </div>
+
+    <button class="btn‑pesan" id="btnKirimPesanan">Kirim Pesanan Ke Penjual</button>
+  </div>
+
+  <div class="toast‑sukses" id="toastCheckout">✅ Pesanan Berhasil Dikirim!</div>
+
+<!-- FIREBASE -->
+<script type="module" src="firebase‑config.js"></script>
+<script type="module">
+import { db } from './firebase‑config.js';
+import { ref, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+
+const ONGKIR = 15000;
+const wadahBarang = document.getElementById("daftarBarangCheckout");
+const subtotalText = document.getElementById("subtotalText");
+const totalAkhirText = document.getElementById("totalAkhirText");
+
+// Muat keranjang dari localStorage
+function muatCheckout(){
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+  if(keranjang.length === 0){
+    wadahBarang.innerText = "Keranjang kosong, silakan belanja dulu";
+    document.getElementById("btnKirimPesanan").disabled = true;
+    return;
+  }
+  let subtotal = 0;
+  wadahBarang.innerHTML = "";
+  keranjang.forEach(item=>{
+    const sub = Number(item.harga) * Number(item.jumlah);
+    subtotal += sub;
+    wadahBarang.innerHTML += `
+    <div class="item‑checkout">
+      <img src="${item.foto}">
+      <div>
+        <div>${item.nama}</div>
+        <div>Qty: ${item.jumlah} | Rp ${Number(item.harga).toLocaleString('id‑ID')}</div>
+      </div>
+    </div>
+    `
+  })
+  subtotalText.innerText = "Rp " + subtotal.toLocaleString('id‑ID');
+  const totalAkhir = subtotal + ONGKIR;
+  totalAkhirText.innerText = "Rp " + totalAkhir.toLocaleString('id‑ID');
+}
+
+// Kirim pesanan ke Firebase Realtime Database
+document.getElementById("btnKirimPesanan").onclick = async function(){
+  const nama = document.getElementById("namaPenerima").value.trim();
+  const hp = document.getElementById("noHp").value.trim();
+  const alamat = document.getElementById("alamatLengkap").value.trim();
+  const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+
+  if(!nama || !hp || !alamat){
+    alert("❌ Isi semua data alamat penerima");
+    return;
+  }
+  if(keranjang.length === 0){
+    alert("❌ Tidak ada barang dipesan");
+    return;
+  }
+
+  const subtotal = keranjang.reduce((sum,item)=> sum + (Number(item.harga)*Number(item.jumlah)), 0);
+  const pesananData = {
+    namaPenerima: nama,
+    noHp: hp,
+    alamat: alamat,
+    barang: keranjang,
+    subtotal: subtotal,
+    ongkir: ONGKIR,
+    totalBayar: subtotal + ONGKIR,
+    status: "Menunggu Diproses",
+    tanggal: new Date().toLocaleString("id‑ID")
+  }
+
+  await push(ref(db, "pesanan"), pesananData);
+  localStorage.removeItem("keranjangToko");
+
+  // Toast Sukses
+  const toast = document.getElementById("toastCheckout");
+  toast.style.display = "block";
+  setTimeout(()=>{
+    toast.style.display = "none";
+    window.location.href = "index.html";
+  },2500)
+}
+
+muatCheckout();
+</script>
+</body>
+</html>
