@@ -118,6 +118,19 @@
       border-radius:6px;
       font-size:16px;
     }
+
+    .toast‑sukses{
+  position:fixed;
+  bottom:120px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#22c55e;
+  color:white;
+  padding:12px 20px;
+  border‑radius:8px;
+  z‑index:999;
+  display:none;
+ }
   </style>
 </head>
 <body>
@@ -163,22 +176,38 @@ if(!idProduk){
     // Tambah ke keranjang
 const btnKeranjang = document.getElementById("btnTambahKeranjang");
 btnKeranjang.onclick = function(){
+  
+  // Matikan tombol sementara
+  btnKeranjang.disabled = true;
+  btnKeranjang.innerText = "Sedang Menambahkan...";
+
   const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
   const cekSudahAda = keranjangLama.find(x=>x.id === idProduk);
+
   if(cekSudahAda){
     cekSudahAda.jumlah += 1;
   }else{
     keranjangLama.push({
       id: idProduk,
       nama: item.nama,
-      harga: item.harga,
+      harga: Number(item.harga),
       foto: item.foto,
       jumlah: 1
     })
   }
+
   localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
-  alert("✅ Berhasil dimasukkan ke Keranjang! Buka halaman Keranjang");
-}
+
+  // TAMPILKAN TOAST NOTIFIKASI
+  const toast = document.getElementById("toastSukses");
+  toast.style.display = "block";
+  setTimeout(()=>{
+    toast.style.display = "none";
+    // Nyalakan kembali tombol
+    btnKeranjang.disabled = false;
+    btnKeranjang.innerHTML = `<i class="fas fa‑shopping‑cart"></i> Masukkan Keranjang`;
+  }, 2000);
+  }
 
     btnKeranjang.onclick = function(){
   const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
@@ -236,6 +265,7 @@ btnKeranjang.onclick = function(){
   </button>
 </div>
 
+  <div class="toast‑sukses" id="toastSukses">✅ Berhasil dimasukkan ke Keranjang!</div>
 </body>
 </html>
   
