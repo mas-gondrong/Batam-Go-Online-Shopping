@@ -111,7 +111,7 @@
       <input type="text" id="noHp" placeholder="Nomor HP">
       <textarea id="alamatLengkap" rows="3" placeholder="Alamat lengkap (Jalan, RT RW, Kota)"></textarea>
     </div>
-
+    
     <!-- DAFTAR BARANG -->
     <div class="box">
       <h4>Daftar Barang</h4>
@@ -145,56 +145,62 @@
 import { db } from './firebase‑config.js';
 import { ref, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
 
-const ONGKIR = 15000;
+
+const ONGKIR = 15000;
 const wadahBarang = document.getElementById("daftarBarangCheckout");
 const subtotalText = document.getElementById("subtotalText");
 const totalAkhirText = document.getElementById("totalAkhirText");
 
+
 // Muat keranjang dari localStorage
 function muatCheckout(){
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
-  if(keranjang.length === 0){
+  console.log("ISI KERANJANG:", keranjang); // CEK DI CONSOLE
+
+
+  if(keranjang.length === 0){
     wadahBarang.innerText = "Keranjang kosong, silakan belanja dulu";
-    document.getElementById("btnKirimPesanan").disabled = true;
     return;
   }
-  let subtotal = 0;
+  let subtotal = 0;
   wadahBarang.innerHTML = "";
   keranjang.forEach(item=>{
     const sub = Number(item.harga) * Number(item.jumlah);
     subtotal += sub;
     wadahBarang.innerHTML += `
-    <div class="item‑checkout">
+    <div class="item-checkout">
       <img src="${item.foto}">
       <div>
         <div>${item.nama}</div>
-        <div>Qty: ${item.jumlah} | Rp ${Number(item.harga).toLocaleString('id‑ID')}</div>
+        <div>Qty: ${item.jumlah} | Rp ${Number(item.harga).toLocaleString('id-ID')}</div>
       </div>
     </div>
     `
   })
-  subtotalText.innerText = "Rp " + subtotal.toLocaleString('id‑ID');
+  subtotalText.innerText = "Rp " + subtotal.toLocaleString('id-ID');
   const totalAkhir = subtotal + ONGKIR;
-  totalAkhirText.innerText = "Rp " + totalAkhir.toLocaleString('id‑ID');
+  totalAkhirText.innerText = "Rp " + totalAkhir.toLocaleString('id-ID');
 }
 
-// Kirim pesanan ke Firebase Realtime Database
+// Kirim pesanan ke Firebase
 document.getElementById("btnKirimPesanan").onclick = async function(){
   const nama = document.getElementById("namaPenerima").value.trim();
   const hp = document.getElementById("noHp").value.trim();
   const alamat = document.getElementById("alamatLengkap").value.trim();
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
 
+
   if(!nama || !hp || !alamat){
     alert("❌ Isi semua data alamat penerima");
     return;
   }
-  if(keranjang.length === 0){
-    alert("❌ Tidak ada barang dipesan");
+  if(keranjang.length === 0){
+    alert("❌ Keranjang kosong, kembali belanja");
     return;
   }
 
-  const subtotal = keranjang.reduce((sum,item)=> sum + (Number(item.harga)*Number(item.jumlah)), 0);
+
+  const subtotal = keranjang.reduce((sum,item)=> sum + (Number(item.harga)*Number(item.jumlah)), 0);
   const pesananData = {
     namaPenerima: nama,
     noHp: hp,
@@ -204,13 +210,14 @@ document.getElementById("btnKirimPesanan").onclick = async function(){
     ongkir: ONGKIR,
     totalBayar: subtotal + ONGKIR,
     status: "Menunggu Diproses",
-    tanggal: new Date().toLocaleString("id‑ID")
+    tanggal: new Date().toLocaleString("id-ID")
   }
+
 
   await push(ref(db, "pesanan"), pesananData);
   localStorage.removeItem("keranjangToko");
 
-  // Toast Sukses
+
   const toast = document.getElementById("toastCheckout");
   toast.style.display = "block";
   setTimeout(()=>{
@@ -219,7 +226,10 @@ document.getElementById("btnKirimPesanan").onclick = async function(){
   },2500)
 }
 
+
+// JALANKAN SAAT HALAMAN DIBUKA
 muatCheckout();
-</script>
+  </script>
 </body>
 </html>
+
