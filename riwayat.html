@@ -123,24 +123,20 @@
           let htmlBarang = "";
           if (pesan.barang) {
             // Kalau bukan array (object di Firebase), ubah dulu jadi array
-            const daftarBarang = Array.isArray(pesan.barang)
-              ? pesan.barang
-              : Object.values(pesan.barang);
-            htmlBarang = daftarBarang.map(brg => `
-              <div class="item-riwayat">
-                <img src="${brg.foto || 'https://picsum.photos/id/21/100/100'}" alt="${brg.nama || ''}">
-                <div>
-                style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#f5f5f5;">
-                <div style="flex:1;min-width:0;">
-                <div style="font-size:14px;line-height:1.3;word-break:break-word;">Nama produk</div>
-                <div style="font-size:12px;color:#888;">Qty: 1</div>
-              </div>
-             </div>
-                  <div>${brg.nama || '(Tanpa nama)'}</div>
-                  <div>Qty: ${brg.jumlah || 1}</div>
-                </div>
-              </div>
-            `).join('');
+const daftarBarang = Array.isArray(pesan.barang)
+  ? pesan.barang
+  : Object.values(pesan.barang);
+
+htmlBarang = daftarBarang.map(brg => `
+  <div class="item-riwayat" style="display:flex;align-items:center;gap:10px;margin:8px 0;">
+    <img src="${brg.foto || 'https://picsum.photos/id/21/100/100'}" alt="${brg.nama || ''}"
+         style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#f5f5f5;">
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;line-height:1.3;word-break:break-word;">${brg.nama || '(Tanpa nama)'}</div>
+      <div style="font-size:12px;color:#888;">Qty: ${brg.jumlah || 1}</div>
+    </div>
+  </div>
+`).join('');
           } else {
             htmlBarang = `<p style="color:#999;">Data barang kosong</p>`;
           }
