@@ -173,8 +173,79 @@
 function tutupAkun() {
   document.getElementById('akunModal').classList.remove('show');
   document.body.style.overflow = 'auto';
+}
 
-    }
+
+import { db } from './firebase‑config.js';
+import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+
+const produkRef = ref(db, 'produk');
+const wadahProduk = document.getElementById("wadahProdukBeranda");
+const inputCari = document.getElementById("cariProduk"); // ✅ Baca input DI HEADER
+const tombolFilter = document.querySelectorAll(".btn‑filter");
+
+let semuaProduk = [];
+let kategoriAktif = "semua";
+
+// Muat Produk Dari Firebase
+onValue(produkRef, (snapshot)=>{
+  const data = snapshot.val();
+  semuaProduk = [];
+  if(!data){
+    wadahProduk.innerHTML = `<p style="text‑align:center; padding:30px;">Belum ada produk tersedia</p>`;
+    return;
+  }
+  semuaProduk = Object.entries(data).map(([id, item])=>({id, ...item}));
+  tampilkanHasil();
+})
+
+// Fungsi Tampilkan + Filter + Cari
+function tampilkanHasil(){
+  const kataCari = inputCari.value.toLowerCase().trim();
+  let hasil = semuaProduk;
+
+  // Filter Kategori
+  if(kategoriAktif !== "semua"){
+    hasil = hasil.filter(p => p.kategori?.toLowerCase() === kategoriAktif)
+  }
+  // Filter Pencarian Nama Produk (Header)
+  if(kataCari){
+    hasil = hasil.filter(p => p.nama?.toLowerCase().includes(kataCari))
+  }
+
+  wadahProduk.innerHTML = "";
+  if(hasil.length === 0){
+    wadahProduk.innerHTML = `<p style="text‑align:center; padding:30px;">Produk yang kamu cari tidak ditemukan 😔</p>`;
+    return;
+  }
+
+  hasil.forEach((produk)=>{
+    wadahProduk.innerHTML += `
+    <div class="product‑card" onclick="location.href='detail.html?id=${produk.id}'">
+      <img src="${produk.foto}" alt="${produk.nama}">
+      <div class="product‑info">
+        <h4>${produk.nama}</h4>
+        <p class="price">Rp ${Number(produk.harga).toLocaleString('id‑ID')}</p>
+      </div>
+    </div>
+    `
+  })
+}
+
+// Event Klik Filter Kategori (Semua/Wanita/Pria dll)
+tombolFilter.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    tombolFilter.forEach(b => b.classList.remove("aktif"));
+    btn.classList.add("aktif");
+    kategoriAktif = btn.dataset.kategori;
+    tampilkanHasil();
+  })
+})
+
+// ✅ Cari dengan TEKAN ENTER di kolom HEADER
+inputCari.addEventListener("keyup", (e)=>{
+  if(e.key === "Enter") tampilkanHasil();
+})
   </script>
   
   <!-- Firebase SDK -->
@@ -261,4 +332,3 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
   </script>
 </body>
 </html>
-
