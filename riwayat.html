@@ -77,70 +77,94 @@
     }
   </style>
 </head>
-<body>
+  <body>
   <div class="header">
-    <a href="index.html"><i class="fas fa‑arrow‑left"></i></a>
+    <a href="index.html"><i class="fas fa-arrow-left"></i></a>
     <h3>Riwayat Pesanan Saya</h3>
   </div>
 
   <div class="wrap" id="kontenRiwayat">
-    <p style="text‑align:center;">Memuat data...</p>
+    <p style="text-align:center;">Memuat data...</p>
   </div>
 
-<script type="module">
-import { db } from './firebase‑config.js';
-import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-const pesananRef = ref(db, "pesanan");
-const kontenRiwayat = document.getElementById("kontenRiwayat");
+    const kontenRiwayat = document.getElementById("kontenRiwayat");
 
-onValue(pesananRef, (snapshot)=>{
-  const data = snapshot.val();
-  kontenRiwayat.innerHTML = "";
-
-  if(!data){
-    kontenRiwayat.innerHTML = `<div class="text‑kosong"><i class="fas fa‑clipboard‑list fa‑3x"></i><p>Belum ada riwayat pesanan</p></div>`;
-    return;
-  }
-
-  const listPesanan = Object.entries(data).map(([id, value])=>({id, ...value}));
-  listPesanan.reverse();
-
-  listPesanan.forEach((pesan)=>{
-    let kelasStatus = "menunggu";
-    if(pesan.status === "Sedang Dikirim") kelasStatus = "dikirim";
-    if(pesan.status === "Selesai") kelasStatus = "selesai";
-
-    let htmlBarang = "";
-    // ✅ PENANGANAN JIKA BARANG BUKAN ARRAY (penyebab stuck memuat data)
-    if(pesan.barang){
-      const daftarBarang = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang);
-      daftarBarang.forEach(brg=>{
-        htmlBarang += `
-        <div class="item‑riwayat">
-          <img src="${brg.foto}">
-          <div>
-            <div>${brg.nama}</div>
-            <div>Qty: ${brg.jumlah}</div>
-          </div>
-        </div>
-        `
-      })
+    if (!kontenRiwayat) {
+      console.error("❌ Elemen #kontenRiwayat tidak ketemu!");
     } else {
-      htmlBarang = `<p style="color:#999">Data barang kosong</p>`
-    }
+      const pesananRef = ref(db, "pesanan");
 
-    kontenRiwayat.innerHTML += `
-    <div class="card‑pesanan">
-      <span class="status ${kelasStatus}">${pesan.status}</span>
-      <div><small>Tanggal: ${pesan.tanggal || "‑"}</small></div>
-      ${htmlBarang}
-      <hr style="margin:8px 0">
-      <div><strong>Total Bayar: Rp ${Number(pesan.totalBayar).toLocaleString('id‑ID')}</strong></div>
-    </div>
-    `
-  })
-})
-</script>
+      onValue(pesananRef, (snapshot) => {
+        const data = snapshot.val();
+        kontenRiwayat.innerHTML = "";
+
+        if (!data) {
+          kontenRiwayat.innerHTML = `
+            <div class="text-kosong">
+              <i class="fas fa-clipboard-list fa-3x"></i>
+              <p>Belum ada riwayat pesanan</p>
+            </div>`;
+          return;
+        }
+
+        const listPesanan = Object.entries(data)
+          .map(([id, value]) => ({ id, ...value }))
+          .reverse(); // pesanan terbaru di atas
+
+        kontenRiwayat.innerHTML = listPesanan.map(pesan => {
+          let kelasStatus = "menunggu";
+          if (pesan.status === "Sedang Dikirim") kelasStatus = "dikirim";
+          if (pesan.status === "Selesai")         kelasStatus = "selesai";
+
+          let htmlBarang = "";
+          if (pesan.barang) {
+            // Kalau bukan array (object di Firebase), ubah dulu jadi array
+            const daftarBarang = Array.isArray(pesan.barang)
+              ? pesan.barang
+              : Object.values(pesan.barang);
+            htmlBarang = daftarBarang.map(brg => `
+              <div class="item-riwayat">
+                <img src="${brg.foto || 'https://picsum.photos/id/21/100/100'}" alt="${brg.nama || ''}">
+                <div>
+                  <div>${brg.nama || '(Tanpa nama)'}</div>
+                  <div>Qty: ${brg.jumlah || 1}</div>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            htmlBarang = `<p style="color:#999;">Data barang kosong</p>`;
+          }
+
+          const total  = Number(pesan.totalBayar || 0).toLocaleString('id-ID');
+          const status = pesan.status || "-";
+          const tanggal = pesan.tanggal || "-";
+
+          return `
+            <div class="card-pesanan">
+              <span class="status ${kelasStatus}">${status}</span>
+              <div><small>Tanggal: ${tanggal}</small></div>
+              ${htmlBarang}
+              <hr style="margin:8px 0;">
+              <div><strong>Total Bayar: Rp ${total}</strong></div>
+            </div>
+          `;
+        }).join('');
+
+        console.log("✅ Riwayat pesanan dimuat:", listPesanan.length, "item");
+      }, (error) => {
+        // Callback error — supaya kegagalan tidak diam-diam
+        console.error("❌ GAGAL BACA RIWAYAT PESANAN:", error);
+        kontenRiwayat.innerHTML = `
+          <p style="text-align:center;padding:20px;color:#dc3545;">
+            ⚠️ Gagal memuat riwayat pesanan: ${error.message}<br>
+            <small>Cek Firebase Rules: pesanan: { ".read": true, ".write": true }</small>
+          </p>`;
+      });
+    }
+  </script>
 </body>
 </html>
