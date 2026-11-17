@@ -140,9 +140,7 @@ button {
   place-items:center;
 }
 
-/* ===== HEADER FIXED — paste ke <style> di index.html atau ke style.css ===== */
-/* Target class: .header-top (sesuai HTML Anda saat ini) */
-
+/* ===== HEADER FIXED ===== */
 .header-top {
   display: flex;
   align-items: center;
