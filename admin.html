@@ -543,15 +543,12 @@
   </div>
   </div>
 
-  <!-- =====================================
-       TAB 3: DAFTAR PESANAN
-       ===================================== -->
-<div class="tab‑content" id="tab‑pesanan">
-  <div id="tabPesanan" class="tab‑content">
-    <h3>Daftar Pesanan Pembeli</h3>
-    <!-- Tempat data pesanan DARI FIREBASE -->
-    <div id="wadahPesananAdmin"></div>
-  </div>
+   <!-- =====================================
+     TAB 3: DAFTAR PESANAN
+     ===================================== -->
+<div class="tab-content" id="tab-pesanan">
+  <h3>Daftar Pesanan Pembeli</h3>
+  <div id="wadahPesananAdmin"></div>
 </div>
   
   <!-- =====================================
@@ -680,179 +677,151 @@ function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKA
 }
 </script>
 
-  <!-- BLOK 2 PREVIEW + SIMPAN PRODUK -->
+<!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
 <script type="module">
   import { db } from "./firebase-config.js";
-  import { ref, push, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { ref, push, set, onValue, update }
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-  document.addEventListener("DOMContentLoaded", ()=>{
-    const inputFoto = document.getElementById("fotoProduk");
-    const previewContainer = document.getElementById("previewContainer");
-    const previewFoto = document.getElementById("previewFoto");
-    const infoUkuran = document.getElementById("infoUkuran");
-    const btnSimpan = document.getElementById("btnSimpanProduk");
+  document.addEventListener("DOMContentLoaded", () => {
+    /* ===== TAMBAH PRODUK ===== */
+    const inputFoto       = document.getElementById("fotoProduk");
+    const previewContainer= document.getElementById("previewContainer");
+    const previewFoto     = document.getElementById("previewFoto");
+    const infoUkuran      = document.getElementById("infoUkuran");
+    const btnSimpan       = document.getElementById("btnSimpanProduk");
 
-    // 👉 PREVIEW + ISI VARIABEL fotoBase64 (PENTING!)
-    if(inputFoto){
-      inputFoto.addEventListener("change", async ()=>{
+    if (inputFoto) {
+      inputFoto.addEventListener("change", async () => {
         const file = inputFoto.files[0];
-        if(!file){
-          previewContainer.style.display="none";
+        if (!file) {
+          previewContainer.style.display = "none";
           window.fotoBase64 = "";
           return;
         }
-        try{
+        try {
           const hasil = await kompresGambar(file);
-          window.fotoBase64 = hasil.base64; // ↪️ PAKE window.fotoBase64 (GLOBAL) jadi bisa dibaca tombol simpan
+          window.fotoBase64 = hasil.base64;
           previewFoto.src = window.fotoBase64;
-          previewContainer.style.display="block";
+          previewContainer.style.display = "block";
           infoUkuran.innerText = `✅ ${hasil.ukuranAsli}KB → ${hasil.ukuranBaru}KB`;
-        }catch(err){
-          alert("Error kompres: "+err.message);
+        } catch (err) {
+          alert("Error kompres: " + err.message);
         }
-      })
+      });
     }
 
-    //👉 TOMBOL SIMPAN
-    if(btnSimpan){
-      btnSimpan.addEventListener("click", async ()=>{
-        alert("🟢 TOMBOL DIKLIK");
-        const nama = document.getElementById("namaProduk").value.trim();
-        const harga = Number(document.getElementById("hargaProduk").value);
-        const diskon = Number(document.getElementById("diskonProduk").value) || 0;
-        const stok = Number(document.getElementById("stokProduk").value) ||0;
-        const deskripsi = document.getElementById("deskripsiProduk").value.trim();
-        const gambar = window.fotoBase64;
+    if (btnSimpan) {
+      btnSimpan.addEventListener("click", async () => {
+        const nama       = document.getElementById("namaProduk").value.trim();
+        const harga      = Number(document.getElementById("hargaProduk").value);
+        const diskon     = Number(document.getElementById("diskonProduk").value) || 0;
+        const stok       = Number(document.getElementById("stokProduk").value) || 0;
+        const deskripsi  = document.getElementById("deskripsiProduk").value.trim();
+        const gambar     = window.fotoBase64;
 
-        // CEK SEMUA ISIAN
-        if(!nama || !harga || !gambar){
+        if (!nama || !harga || !gambar) {
           alert("❌ Nama, Harga, Foto WAJIB diisi");
           return;
         }
-        if(gambar.length > 300000){ // ↪️ BATAS 300KB (lebih aman dari 500KB)
+        if (gambar.length > 300000) {
           alert("⚠️ Gambar terlalu besar! Pilih foto yang lebih kecil");
           return;
         }
-
-        try{
-          alert("⏳ Mengirim ke Firebase...");
-          const produkRef = push(ref(db,"produk"));
+        try {
+          const produkRef = push(ref(db, "produk"));
           await set(produkRef, {
             id: produkRef.key,
-            nama: nama,
-            harga: harga,
+            nama, harga,
             hargaAsli: Math.round(harga * 100 / (100 - diskon)) || harga,
-            diskon: diskon,
-            stok: stok,
-            foto: gambar,
-            deskripsi: deskripsi,
-            terjual:0
-          })
+            diskon, stok, foto: gambar, deskripsi, terjual: 0
+          });
           alert("✅ BERHASIL TERSIMPAN KE FIREBASE!");
-          // RESET FORM
-          document.getElementById("namaProduk").value = "";
-          document.getElementById("hargaProduk").value = "";
-          document.getElementById("diskonProduk").value = "";
-          document.getElementById("stokProduk").value = "";
-          document.getElementById("deskripsiProduk").value = "";
+          ["namaProduk","hargaProduk","diskonProduk","stokProduk","deskripsiProduk"]
+            .forEach(id => document.getElementById(id).value = "");
           inputFoto.value = "";
-          previewContainer.style.display="none";
+          previewContainer.style.display = "none";
           window.fotoBase64 = "";
-        }catch(err){
-          alert("❌ GAGAL SIMPAN: "+err.message);
+        } catch (err) {
+          alert("❌ GAGAL SIMPAN: " + err.message);
           console.error(err);
         }
-      })
+      });
     }
-  })
 
-  import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
-const pesananRef = ref(db, "pesanan");
-onValue(pesananRef, snapshot=>{
-  const wadah = document.getElementById("wadahPesananAdmin");
-  const data = snapshot.val();
-  if(!data){
-    wadah.innerText = "<p style='text‑align:center;'>Belum ada pesanan masuk</p>";
-    return;
-  }
-  const listPesanan = Object.entries(data);
-  wadah.innerHTML = "";
-  listPesanan.forEach(([id, psn])=>{
-    wadah.innerHTML += `
-    <div style="background:white;padding:12px;margin:8px 0;border‑radius:8px;">
-      <p><strong>Nama:</strong> ${psn.namaPenerima}</p>
-      <p><strong>HP:</strong> ${psn.noHp}</p>
-      <p><strong>Alamat:</strong> ${psn.alamat}</p>
-      <p><strong>Total Bayar:</strong> Rp ${Number(psn.totalBayar).toLocaleString('id‑ID')}</p>
-      <p><strong>Status:</strong> ${psn.status}</p>
-      <p><strong>Tanggal:</strong> ${psn.tanggal}</p>
-    </div>
-    `
-  })
-})
+    /* ===== DAFTAR PESANAN ===== */
+    const wadahPesananAdmin = document.getElementById("wadahPesananAdmin");
+    if (!wadahPesananAdmin) {
+      console.error("❌ Elemen #wadahPesananAdmin tidak ketemu!");
+      return;
+    }
 
-  // ADMIN: Baca + Ubah Status Pesanan
-import { db } from './firebase‑config.js';
-import { ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js";
+    const pesananRef = ref(db, "pesanan");
 
-const wadahPesananAdmin = document.getElementById("wadahPesananAdmin");
-const pesananAdminRef = ref(db, "pesanan");
+    onValue(pesananRef, (snapshot) => {
+      const data = snapshot.val();
+      wadahPesananAdmin.innerHTML = "";
 
-// Muat daftar pesanan
-onValue(pesananAdminRef, (snapshot)=>{
-  const data = snapshot.val();
-  wadahPesananAdmin.innerHTML = "";
+      if (!data) {
+        wadahPesananAdmin.innerHTML =
+          "<p style='text-align:center;padding:20px;color:#888;'>Belum ada pesanan masuk</p>";
+        return;
+      }
 
-  if(!data){
-    wadahPesananAdmin.innerHTML = "<p style='text‑align:center;padding:20px;'>Belum ada pesanan masuk</p>";
-    return;
-  }
+      const listPesanan = Object.entries(data)
+        .map(([id, val]) => ({ id, ...val }))
+        .reverse(); // pesanan terbaru di atas
 
-  // Ambil ID + data pesanan
-  const listPesanan = Object.entries(data).map(([id, val])=>({id, ...val}));
-  listPesanan.reverse(); // Pesanan terbaru di atas
+      wadahPesananAdmin.innerHTML = listPesanan.map(pesanan => {
+        let kelasStatus = "";
+        if (pesanan.status === "Menunggu Diproses") kelasStatus = "menunggu";
+        if (pesanan.status === "Sedang Dikirim")    kelasStatus = "proses";
+        if (pesanan.status === "Selesai")            kelasStatus = "selesai";
 
-  listPesanan.forEach((pesanan)=>{
-    let kelasStatus = "";
-    if(pesanan.status === "Menunggu Diproses") kelasStatus = "menunggu";
-    if(pesanan.status === "Sedang Dikirim") kelasStatus = "proses";
-    if(pesanan.status === "Selesai") kelasStatus = "selesai";
+        return `
+          <div class="order-card">
+            <div class="order-header">
+              <span class="order-id">ID: ${pesanan.id}</span>
+              <span class="order-status ${kelasStatus}">${pesanan.status || "-"}</span>
+            </div>
+            <div style="font-size:13px; margin-bottom:8px;">
+              <strong>Pembeli:</strong> ${pesanan.namaPenerima || "-"}<br>
+              <strong>HP:</strong> ${pesanan.noHp || "-"}<br>
+              <strong>Alamat:</strong> ${pesanan.alamat || "-"}<br>
+              <strong>Total:</strong> Rp ${Number(pesanan.totalBayar || 0).toLocaleString('id-ID')}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-sm btn-warning" data-id="${pesanan.id}" data-status="Menunggu Diproses">Menunggu</button>
+              <button class="btn btn-sm btn-primary"  data-id="${pesanan.id}" data-status="Sedang Dikirim">Sedang Dikirim</button>
+              <button class="btn btn-sm btn-success" data-id="${pesanan.id}" data-status="Selesai">Tandai Selesai</button>
+            </div>
+          </div>
+        `;
+      }).join('');
 
-    wadahPesananAdmin.innerHTML += `
-    <div class="order‑card">
-      <div class="order‑header">
-        <span class="order‑id">ID: ${pesanan.id}</span>
-        <span class="order‑status ${kelasStatus}">${pesanan.status}</span>
-      </div>
-      <div style="font‑size:13px; margin‑bottom:8px;">
-        <strong>Pembeli:</strong> ${pesanan.namaPenerima}<br>
-        <strong>HP:</strong> ${pesanan.noHp}<br>
-        <strong>Alamat:</strong> ${pesanan.alamat}<br>
-        <strong>Total:</strong> Rp ${Number(pesanan.totalBayar).toLocaleString('id‑ID')}
-      </div>
-      <div style="display:flex;gap:8px;flex‑wrap:wrap;">
-        <button class="btn btn‑sm btn‑warning" onclick="adminUbahStatus('${pesanan.id}','Menunggu Diproses')">Menunggu</button>
-        <button class="btn btn‑sm btn‑primary" onclick="adminUbahStatus('${pesanan.id}','Sedang Dikirim')">Sedang Dikirim</button>
-        <button class="btn btn‑sm btn‑success" onclick="adminUbahStatus('${pesanan.id}','Selesai')">Tandai Selesai</button>
-      </div>
-    </div>
-    `
-  })
-})
+      // Pasang event listener tombol status (hindari inline onclick = function module scope)
+      wadahPesananAdmin.querySelectorAll("button[data-id]").forEach(tombol => {
+        tombol.addEventListener("click", async () => {
+          const idPesanan = tombol.getAttribute("data-id");
+          const statusBaru = tombol.getAttribute("data-status");
+          try {
+            await update(ref(db, "pesanan/" + idPesanan), { status: statusBaru });
+            alert("✅ Status pesanan diperbarui: " + statusBaru);
+            // onValue akan otomatis re-render, tidak perlu reload
+          } catch (err) {
+            alert("❌ Gagal ubah status: " + err.message);
+            console.error(err);
+          }
+        });
+      });
+    }, (error) => {
+      console.error("❌ GAGAL BACA PESANAN:", error);
+      wadahPesananAdmin.innerHTML =
+        "<p style='text-align:center;padding:20px;color:#dc3545;'>⚠️ Gagal memuat pesanan: " +
+        error.message + "<br><small>Cek Firebase Rules: pesanan: { \".read\": true, \".write\": true }</small></p>";
+    });
+  });
 </script>
-
-  <script>
-function adminUbahStatus(idPesanan, statusBaru){
-  import("https://www.gstatic.com/firebasejs/11.0.1/firebase‑database.js").then(({ref, update})=>{
-    import("./firebase‑config.js").then(({db})=>{
-      update(ref(db, "pesanan/"+idPesanan), {
-        status: statusBaru
-      })
-      alert("✅ Status pesanan berhasil di perbarui!");
-    })
-  })
-}
-  </script>
 
 <!-- BLOK 3 GANTI TAB -->
 <script>
