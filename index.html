@@ -42,46 +42,46 @@
 
 <!-- KATEGORI -->
 <div class="categories">
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-th-large"></i>
+  <button class="category-item aktif" data‑kategori="semua">
+    <i class="fas fa‑th‑large"></i>
     <span>Semua</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-female"></i>
+  </button>
+  <button class="category-item" data‑kategori="wanita">
+    <i class="fas fa‑female"></i>
     <span>Wanita</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-male"></i>
+  </button>
+  <button class="category-item" data‑kategori="pria">
+    <i class="fas fa‑male"></i>
     <span>Pria</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-tshirt"></i>
+  </button>
+  <button class="category-item" data‑kategori="atasan">
+    <i class="fas fa‑tshirt"></i>
     <span>Atasan</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-socks"></i>
+  </button>
+  <button class="category-item" data‑kategori="aksesoris">
+    <i class="fas fa‑socks"></i>
     <span>Aksesoris</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-snowflake"></i>
+  </button>
+  <button class="category-item" data‑kategori="musimdingin">
+    <i class="fas fa‑snowflake"></i>
     <span>Musim Dingin</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-fire"></i>
+  </button>
+  <button class="category-item" data‑kategori="promo">
+    <i class="fas fa‑fire"></i>
     <span>Promo</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-star"></i>
+  </button>
+  <button class="category-item" data‑kategori="terlaris">
+    <i class="fas fa‑star"></i>
     <span>Terlaris</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-clock"></i>
+  </button>
+  <button class="category-item" data‑kategori="terbaru">
+    <i class="fas fa‑clock"></i>
     <span>Terbaru</span>
-  </a>
-  <a href="produk.html" class="category-item">
-    <i class="fas fa-tag"></i>
+  </button>
+  <button class="category-item" data‑kategori="diskon">
+    <i class="fas fa‑tag"></i>
     <span>Diskon</span>
-  </a>
+  </button>
 </div>
 
   <!-- PRODUK TERBARU -->
@@ -185,13 +185,18 @@ import { db } from './firebase-config.js';
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 const produkRef = ref(db, 'produk');
+const container = document.getElementById("daftarProdukBeranda");
+const inputCari = document.getElementById("cariProduk"); // Kolom search di HEADER (sudah diberi id)
+const tombolFilter = document.querySelectorAll(".category-item");
 
+let semuaProduk = [];
+let kategoriAktif = "semua";
+
+// Muat SEMUA produk dari Firebase
 onValue(
   produkRef,
   (snapshot) => {
     const data = snapshot.val();
-    const container = document.getElementById("daftarProdukBeranda");
-
     if (!container) {
       console.error('❌ Container #daftarProdukBeranda TIDAK DITEMUKAN di index.html');
       return;
@@ -202,36 +207,13 @@ onValue(
       return;
     }
 
-    const daftarProduk = Object.keys(data).map(key => ({
+    // Simpan SEMUA produk ke variabel (untuk filter & cari)
+    semuaProduk = Object.keys(data).map(key => ({
       id: key,
       ...data[key]
     }));
 
-    const htmlKartu = daftarProduk.map(item => {
-      const hargaAsli = item.hargaAsli || (item.diskon
-        ? Math.round(item.harga * 100 / (100 - item.diskon))
-        : item.harga);
-
-      return `
-<a href="detail.html?id=${item.id}" class="product-card">
-  <div class="product-image-wrapper">
-    <img src="${item.foto}" alt="${item.nama}" class="product-image" onerror="this.src='https://picsum.photos/id/21/400/300'">
-    ${item.diskon ? `<span class="product-discount">-${item.diskon}%</span>` : ""}
-  </div>
-  <div class="product-info">
-    <h3 class="product-name">${item.nama}</h3>
-    <p class="product-price">
-      Rp ${Number(item.harga||0).toLocaleString('id-ID')}
-      <small style="text-decoration:line-through;color:#999;">Rp ${Number(hargaAsli).toLocaleString('id-ID')}</small>
-    </p>
-    <p class="product-sold">${item.terjual || 0} Terjual</p>
-  </div>
-</a>
-`
-    }).join("");
-
-    container.innerHTML = htmlKartu;
-    console.log('✅ Produk berhasil dimuat: ', daftarProduk.length, 'buah');
+    tampilkanHasil(); // Panggil fungsi tampilkan yang sudah terfilter
   },
   (error) => {
     alert("❌ Error baca data ke beranda: " + error.message);
@@ -239,8 +221,7 @@ onValue(
   }
 )
 
-
-  // Fungsi Tampilkan + Filter + Cari
+// ✅ FUNGSI UTAMA: Cari + Filter + Render kartu produk (DENGAN DISKON + HARGA CORET MILIKMU)
 function tampilkanHasil(){
   const kataCari = inputCari.value.toLowerCase().trim();
   let hasil = semuaProduk;
@@ -249,45 +230,60 @@ function tampilkanHasil(){
   if(kategoriAktif !== "semua"){
     hasil = hasil.filter(p => p.kategori?.toLowerCase() === kategoriAktif)
   }
-  // Filter Pencarian Nama Produk (Header)
+
+  // Filter Pencarian (Header search)
   if(kataCari){
     hasil = hasil.filter(p => p.nama?.toLowerCase().includes(kataCari))
   }
 
-  wadahProduk.innerHTML = "";
-  if(hasil.length === 0){
-    wadahProduk.innerHTML = `<p style="text‑align:center; padding:30px;">Produk yang kamu cari tidak ditemukan 😔</p>`;
+  if (hasil.length === 0) {
+    container.innerHTML = '<p style="grid‑column:1/‑1;text‑align:center;color:#888;padding:30px;">Produk yang dicari tidak ditemukan</p>';
     return;
   }
 
-  hasil.forEach((produk)=>{
-    wadahProduk.innerHTML += `
-    <div class="product‑card" onclick="location.href='detail.html?id=${produk.id}'">
-      <img src="${produk.foto}" alt="${produk.nama}">
-      <div class="product‑info">
-        <h4>${produk.nama}</h4>
-        <p class="price">Rp ${Number(produk.harga).toLocaleString('id‑ID')}</p>
-      </div>
-    </div>
-    `
-  })
+  const htmlKartu = hasil.map(item => {
+    const hargaAsli = item.hargaAsli || (item.diskon
+      ? Math.round(item.harga * 100 / (100 ‑ item.diskon))
+      : item.harga);
+
+    return `
+<a href="detail.html?id=${item.id}" class="product‑card">
+  <div class="product‑image‑wrapper">
+    <img src="${item.foto}" alt="${item.nama}" class="product‑image" onerror="this.src='https://picsum.photos/id/21/400/300'">
+    ${item.diskon ? `<span class="product‑discount">‑${item.diskon}%</span>` : ""}
+  </div>
+  <div class="product‑info">
+    <h3 class="product‑name">${item.nama}</h3>
+    <p class="product‑price">
+      Rp ${Number(item.harga||0).toLocaleString('id‑ID')}
+      <small style="text‑decoration:line‑through;color:#999;">Rp ${Number(hargaAsli).toLocaleString('id‑ID')}</small>
+    </p>
+    <p class="product‑sold">${item.terjual || 0} Terjual</p>
+  </div>
+</a>
+`
+  }).join("");
+
+  container.innerHTML = htmlKartu;
 }
 
-// Event Klik Filter Kategori (Semua/Wanita/Pria dll)
+// ✅ Event: TEKAN ENTER di kolom pencarian HEADER
+inputCari.addEventListener("keyup", (e)=>{
+  if(e.key === "Enter") tampilkanHasil();
+})
+
+// ✅ Event: Klik Kategori (bagian yang kamu tanya Langkah 3)
 tombolFilter.forEach(btn=>{
-  btn.addEventListener("click", ()=>{
+  btn.addEventListener("click", (e)=>{
+    e.preventDefault(); // ❗ SANGAT PENTING: JANGAN LONCAT ke produk.html
     tombolFilter.forEach(b => b.classList.remove("aktif"));
     btn.classList.add("aktif");
     kategoriAktif = btn.dataset.kategori;
     tampilkanHasil();
   })
 })
-
-// ✅ Cari dengan TEKAN ENTER di kolom HEADER
-inputCari.addEventListener("keyup", (e)=>{
-  if(e.key === "Enter") tampilkanHasil();
-})
 </script>
+
   <script>
 // FUNGSI UPDATE BADGE KERANJANG (DIPAKAI DI INDEX + BISA DIPANGGIL DARI DETAIL)
 function updateBadgeKeranjang(){
@@ -309,3 +305,4 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
   </script>
 </body>
 </html>
+
