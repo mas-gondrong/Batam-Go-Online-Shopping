@@ -186,19 +186,24 @@ import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase
 
 const produkRef = ref(db, 'produk');
 const container = document.getElementById("daftarProdukBeranda");
-const inputCari = document.getElementById("cariProduk"); // Kolom search di HEADER (sudah diberi id)
+const teksLoading = document.getElementById("teksLoading");
+
+// ⚠️ PENGECEKAN JIKA INPUT CARI TIDAK ADA (tidak bikin script mati)
+const inputCari = document.getElementById("cariProduk");
 const tombolFilter = document.querySelectorAll(".category-item");
 
 let semuaProduk = [];
 let kategoriAktif = "semua";
 
-// Muat SEMUA produk dari Firebase
+// Muat Produk
 onValue(
   produkRef,
   (snapshot) => {
     const data = snapshot.val();
+    if(teksLoading) teksLoading.innerText = "✅ Selesai dimuat";
+
     if (!container) {
-      console.error('❌ Container #daftarProdukBeranda TIDAK DITEMUKAN di index.html');
+      console.error('❌ Container #daftarProdukBeranda TIDAK DITEMUKAN');
       return;
     }
 
@@ -207,31 +212,28 @@ onValue(
       return;
     }
 
-    // Simpan SEMUA produk ke variabel (untuk filter & cari)
     semuaProduk = Object.keys(data).map(key => ({
       id: key,
       ...data[key]
     }));
 
-    tampilkanHasil(); // Panggil fungsi tampilkan yang sudah terfilter
+    tampilkanHasil();
   },
   (error) => {
-    alert("❌ Error baca data ke beranda: " + error.message);
+    if(teksLoading) teksLoading.innerText = "❌ Gagal muat produk";
+    alert("Error baca Firebase: " + error.message);
     console.error(error);
   }
 )
 
-// ✅ FUNGSI UTAMA: Cari + Filter + Render kartu produk (DENGAN DISKON + HARGA CORET MILIKMU)
 function tampilkanHasil(){
-  const kataCari = inputCari.value.toLowerCase().trim();
+  const kataCari = (inputCari) ? inputCari.value.toLowerCase().trim() : "";
   let hasil = semuaProduk;
 
-  // Filter Kategori
   if(kategoriAktif !== "semua"){
     hasil = hasil.filter(p => p.kategori?.toLowerCase() === kategoriAktif)
   }
 
-  // Filter Pencarian (Header search)
   if(kataCari){
     hasil = hasil.filter(p => p.nama?.toLowerCase().includes(kataCari))
   }
@@ -267,15 +269,17 @@ function tampilkanHasil(){
   container.innerHTML = htmlKartu;
 }
 
-// ✅ Event: TEKAN ENTER di kolom pencarian HEADER
-inputCari.addEventListener("keyup", (e)=>{
-  if(e.key === "Enter") tampilkanHasil();
-})
+// Event Enter Cari (hanya jalan kalau input ada)
+if(inputCari){
+  inputCari.addEventListener("keyup", (e)=>{
+    if(e.key === "Enter") tampilkanHasil();
+  })
+}
 
-// ✅ Event: Klik Kategori (bagian yang kamu tanya Langkah 3)
+// Event Klik Kategori
 tombolFilter.forEach(btn=>{
   btn.addEventListener("click", (e)=>{
-    e.preventDefault(); // ❗ SANGAT PENTING: JANGAN LONCAT ke produk.html
+    e.preventDefault();
     tombolFilter.forEach(b => b.classList.remove("aktif"));
     btn.classList.add("aktif");
     kategoriAktif = btn.dataset.kategori;
@@ -305,4 +309,3 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
   </script>
 </body>
 </html>
-
