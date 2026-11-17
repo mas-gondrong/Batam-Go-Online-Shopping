@@ -170,15 +170,7 @@ function tutupAkun() {
 <script type="module" src="firebase-config.js"></script>
 
 <!-- Hubungkan Firebase & Baca Produk (VERSI BENAR) -->
-<script type="module"> di index.html (versi bersih: bebas U+2011,
-// pencarian real-time, filter kategori, pakai container id yang benar).
-//
-// Cara pakai:
-//  1. Pastikan di HTML ada: <div class="products-grid" id="daftarProdukBeranda"> ... </div>
-//  2. Pastikan input search punya: id="cariProduk"
-//  3. Pastikan tiap kategori punya: class="category-item" dan data-kategori="..." (hyphen ASCII!)
-//  4. Ganti seluruh isi <script type="module"> di index.html dengan kode di bawah ini.
-
+<script type="module">
 import { db } from './firebase-config.js';
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
