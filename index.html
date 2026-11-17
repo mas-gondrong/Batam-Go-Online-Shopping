@@ -216,9 +216,23 @@ function tampilkanHasil() {
   const kataCari = (inputCari ? inputCari.value : "").toLowerCase().trim();
   let hasil = semuaProduk;
 
-  // Filter kategori (kecuali "semua")
+  // Filter kategori (multi-kategori + auto "diskon" untuk produk yang sedang diskon)
   if (kategoriAktif !== "semua") {
-    hasil = hasil.filter(p => (p.kategori || "").toLowerCase() === kategoriAktif);
+    hasil = hasil.filter(p => {
+      // Kategori eksplisit yang dicentang admin saat simpan (array of string)
+      let k = p.kategori;
+      if (Array.isArray(k)) {
+        k = k.map(x => String(x).toLowerCase());
+      } else if (typeof k === "string") {
+        k = [k.toLowerCase()];
+      } else {
+        k = [];
+      }
+      // Bonus: produk dengan diskon > 0 otomatis masuk kategori "diskon"
+      // walau admin tidak mencentangnya.
+      if (Number(p.diskon) > 0 && !k.includes("diskon")) k.push("diskon");
+      return k.includes(kategoriAktif);
+    });
   }
 
   // Filter pencarian real-time
@@ -274,8 +288,7 @@ if (inputCari) {
 // Klik kategori
 tombolFilter.forEach(btn => {
   btn.addEventListener("click", (e) => {
-    e.preventDefault(); 
-    // cegah navigasi kalau pakai <a href="#">
+    e.preventDefault(); // cegah navigasi kalau pakai <a href="#">
     tombolFilter.forEach(b => b.classList.remove("aktif"));
     btn.classList.add("aktif");
     kategoriAktif = btn.dataset.kategori || "semua";
