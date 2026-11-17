@@ -115,7 +115,7 @@
           .map(([id, value]) => ({ id, ...value }))
           .reverse(); // pesanan terbaru di atas
 
-        kontenRiwayat.innerHTML = listPesanan.map(pesan => {
+      kontenRiwayat.innerHTML = listPesanan.map((pesan, idx) => {
   let kelasStatus = "menunggu";
   if (pesan.status === "Sedang Dikirim") kelasStatus = "dikirim";
   if (pesan.status === "Selesai")        kelasStatus = "selesai";
@@ -127,7 +127,7 @@
       : Object.values(pesan.barang);
 
     htmlBarang = daftarBarang.map(brg => `
-      <div class="item-riwayat" style="display:flex;align-items:center;gap:10px;margin:8px 0;">
+      <div style="display:flex;align-items:center;gap:10px;margin:8px 0;">
         <img src="${brg.foto || 'https://picsum.photos/id/21/100/100'}" alt="${brg.nama || ''}"
              style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#f5f5f5;">
         <div style="flex:1;min-width:0;">
@@ -144,14 +144,17 @@
   const status  = pesan.status || "-";
   const tanggal = pesan.tanggal || "-";
 
+  // DEBUG: border warna berbeda per kartu supaya batasnya kelihatan jelas
+  const warna = ['red','blue','green','orange','purple','brown','teal'][idx % 7];
+
   return `
-    <div class="card-pesanan">
+    <section style="display:block;border:2px solid ${warna};border-radius:8px;padding:12px;margin:0 0 12px 0;background:white;">
       <span class="status ${kelasStatus}">${status}</span>
       <div><small>Tanggal: ${tanggal}</small></div>
       ${htmlBarang}
-      <hr style="margin:8px 0;">
+      <hr style="margin:8px 0;border:none;border-top:1px solid #eee;">
       <div><strong>Total Bayar: Rp ${total}</strong></div>
-    </div>
+    </section>
   `;
 }).join('');
 
