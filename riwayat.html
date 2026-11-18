@@ -80,36 +80,25 @@
    BOTTOM NAVIGATION
 ===================================== */
 .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--white);
-  display: flex;
-  justify-content: space-around;
-  padding: 6px 0;
-  box-shadow: 0 -1px 4px rgba(0,0,0,0.06);
-  z-index: 100;
-}
-
-.bottom-nav a {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 11px;
-  color: var(--gray);
-  padding: 4px 10px;
-}
-
-.bottom-nav a i {
-  font-size: 18px;
-  margin-bottom: 2px;
-}
-
-.bottom-nav a.active {
-  color: var(--primary);
-}
-
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      background:white;
+      display:flex;
+      justify-content:space-around;
+      padding:8px 0;
+      border-top:1px solid #ddd;
+    }
+    .bottom-nav a {
+      text-align:center;
+      text-decoration:none;
+      color:#666;
+      font-size:12px;
+    }
+    .bottom-nav a.active {
+      color:#ee4d2d;
+      }
   </style>
 </head>
   <body>
@@ -122,25 +111,25 @@
     <p style="text-align:center;">Memuat data...</p>
   </div>
 
-    <!-- BOTTOM NAVIGATION -->
-<nav class="bottom-nav">
-  <a href="index.html" class="active">
-    <i class="fas fa-home"></i>
-    <span>Beranda</span>
-  </a>
-  <a href="produk.html">
-    <i class="fas fa-th-large"></i>
-    <span>Kategori</span>
-  </a>
-  <a href="keranjang.html">
-    <i class="fas fa-shopping-cart"></i>
-    <span>Keranjang</span>
-  </a>
-  <a href="#" onclick="bukaAkun(); return false;" class="active">
-  <i class="fas fa-user"></i>
-  <span>Akun</span>
-  </a>
-</nav>
+  <!-- NAV BAWAH -->
+  <nav class="bottom-nav">
+    <a href="index.html">
+      <i class="fas fa-home"></i>
+      <span>Beranda</span>
+    </a>
+    <a href="produk.html">
+      <i class="fas fa-th-large"></i>
+      <span>Kategori</span>
+    </a>
+    <a href="keranjang.html" class="active">
+      <i class="fas fa-shopping-cart"></i>
+      <span>Keranjang</span>
+    </a>
+    <a href="#" onclick="bukaAkun(); return false;">
+      <i class="fas fa-user"></i>
+      <span>Akun</span>
+    </a>
+  </nav>
 
   <script type="module">
     import { db } from './firebase-config.js';
