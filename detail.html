@@ -215,8 +215,18 @@ if(!idProduk){
       localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
 
       // 👉 BARIS INI DIHAPUS: updateBadgeKeranjang();
+      
+      // ✅ TOAST NOTIFIKASI
+      const toast = document.getElementById("toastSukses");
+      toast.style.display = "block";
+      setTimeout(()=>{
+        toast.style.display = "none";
+        btnKeranjang.disabled = false;
+        btnKeranjang.innerHTML = `<i class="fas fa-shopping-cart"></i> Masukkan Keranjang`;
+      }, 2000);
+    }
 
-    // ✅ BELI SEKARANG
+     // ✅ BELI SEKARANG
     const btnBeli = document.getElementById("btnBeliSekarang");
     btnBeli.onclick = function(){
       const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
@@ -239,17 +249,7 @@ if(!idProduk){
       // Langsung ke checkout
       window.location.href = "checkout.html";
     }
-      
-      // ✅ TOAST NOTIFIKASI
-      const toast = document.getElementById("toastSukses");
-      toast.style.display = "block";
-      setTimeout(()=>{
-        toast.style.display = "none";
-        btnKeranjang.disabled = false;
-        btnKeranjang.innerHTML = `<i class="fas fa-shopping-cart"></i> Masukkan Keranjang`;
-      }, 2000);
-    }
-
+                
   }).catch((err)=>{
     console.error("❌ Error detail:", err);
     kontenDetail.innerHTML = `<p class="loading-text" style="color:red;">❌ Error: ${err.message}</p>`;
