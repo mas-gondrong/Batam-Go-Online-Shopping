@@ -1,4 +1,7 @@
 // ===== KONFIGURASI FIREBASE =====
+// (versi yang sudah diperbaiki — tidak ada deklarasi/export duplikat,
+//  dan baris getStorage yang tidak pernah di-import sudah dihapus)
+
 const firebaseConfig = {
   apiKey: "AIzaSyDxNIdxNFmvZH532cmz14wx4gpXNdwfHns",
   authDomain: "toko-baju-online-alfa.firebaseapp.com",
@@ -9,12 +12,13 @@ const firebaseConfig = {
   appId: "1:299306229226:web:21c02a1e57dfea5fdda693"
 };
 
+// Inisialisasi Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getDatabase }   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-import { getAuth }       from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-const app  = initializeApp(firebaseConfig);
-const db   = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 const auth = getAuth(app);
 
-export { db, auth };
+export { db, auth }; 
