@@ -216,6 +216,30 @@ if(!idProduk){
 
       // 👉 BARIS INI DIHAPUS: updateBadgeKeranjang();
 
+    // ✅ BELI SEKARANG
+    const btnBeli = document.getElementById("btnBeliSekarang");
+    btnBeli.onclick = function(){
+      const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
+      const cekSudahAda = keranjangLama.find(x => x.id === idProduk);
+
+      if(cekSudahAda){
+        cekSudahAda.jumlah += 1;
+      } else {
+        keranjangLama.push({
+          id: idProduk,
+          nama: item.nama,
+          harga: Number(item.harga),
+          foto: item.foto,
+          jumlah: 1
+        });
+      }
+
+      localStorage.setItem("keranjangToko", JSON.stringify(keranjangLama));
+
+      // Langsung ke checkout
+      window.location.href = "checkout.html";
+    }
+      
       // ✅ TOAST NOTIFIKASI
       const toast = document.getElementById("toastSukses");
       toast.style.display = "block";
@@ -230,7 +254,7 @@ if(!idProduk){
     console.error("❌ Error detail:", err);
     kontenDetail.innerHTML = `<p class="loading-text" style="color:red;">❌ Error: ${err.message}</p>`;
   })
-                                         }
+}
 </script>
 
 <!-- Tombol Aksi -->
@@ -238,9 +262,9 @@ if(!idProduk){
   <button class="btn-keranjang" id="btnTambahKeranjang">
     <i class="fas fa-shopping-cart"></i> Masukkan Keranjang
   </button>
-  <button class="btn-beli" onclick="alert('✅ Beli Sekarang (Nanti lanjut)')">
-    Beli Sekarang
-  </button>
+    <button class="btn-beli" id="btnBeliSekarang">
+  Beli Sekarang
+    </button>
 </div>
 
 <div class="toast-sukses" id="toastSukses">✅ Berhasil dimasukkan ke Keranjang!</div>
