@@ -176,8 +176,28 @@ input, textarea {
 <button class="btn-pesan" id="btnKirimPesanan">Kirim Pesanan Ke Penjual</button>
 </div>
 
-<div class="toast-sukses" id="toastCheckout">✅ Pesanan Berhasil Dikirim!</di
-                                                                          v>
+<div class="toast-sukses" id="toastCheckout">✅ Pesanan Berhasil Dikirim!</div>
+
+  <!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <a href="index.html" class="active">
+    <i class="fas fa-home"></i>
+    <span>Beranda</span>
+  </a>
+  <a href="produk.html">
+    <i class="fas fa-th-large"></i>
+    <span>Kategori</span>
+  </a>
+  <a href="keranjang.html">
+    <i class="fas fa-shopping-cart"></i>
+    <span>Keranjang</span>
+  </a>
+  <a href="#" onclick="bukaAkun(); return false;" class="active">
+  <i class="fas fa-user"></i>
+  <span>Akun</span>
+  </a>
+</nav>
+  
 <!-- FIREBASE -->
 <script type="module" src="firebase-config.js"></script>
 <script type="module">
