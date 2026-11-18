@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar Akun — Toko Baju Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #fff; border-radius: 12px; padding: clamp(24px, 6vw, 36px); max-width: 420px; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .logo { text-align: center; margin-bottom: 24px; }
+    .logo i { font-size: clamp(36px, 10vw, 44px); color: #ee4d2d; }
+    .logo h1 { font-size: clamp(16px, 4.5vw, 18px); color: #333; margin-top: 8px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 600; }
+    .field input {
+      width: 100%; height: 44px; padding: 0 14px;
+      border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none;
+    }
+    .field input:focus { border-color: #ee4d2d; }
+    .role-options { display: flex; gap: 12px; }
+    .role-option {
+      flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 12px;
+      text-align: center; cursor: pointer; transition: all 0.15s;
+    }
+    .role-option input { display: none; }
+    .role-option span { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; color: #555; }
+    .role-option span i { font-size: 22px; color: #999; }
+    .role-option:has(input:checked) { border-color: #ee4d2d; background: #fff5f2; }
+    .role-option:has(input:checked) span i { color: #ee4d2d; }
+    .btn {
+      width: 100%; height: 44px; background: #ee4d2d; color: #fff;
+      border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error { color: #dc3545; font-size: 13px; margin-bottom: 12px; min-height: 18px; text-align: center; }
+    .footer-link { text-align: center; margin-top: 20px; font-size: 13px; color: #666; }
+    .footer-link a { color: #ee4d2d; text-decoration: none; }
+    .back-home { text-align: center; margin-top: 14px; }
+    .back-home a { color: #888; font-size: 13px; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <i class="fas fa-shopping-bag"></i>
+      <h1>Daftar Akun Baru</h1>
+    </div>
+    <form id="formRegister">
+      <div class="error" id="msgError"></div>
+      <div class="field">
+        <label for="nama">Nama Lengkap</label>
+        <input type="text" id="nama" placeholder="Nama Anda" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="email@contoh.com" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Password (min. 6 karakter)</label>
+        <input type="password" id="password" placeholder="••••••••" minlength="6" required autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label>Daftar sebagai</label>
+        <div class="role-options">
+          <label class="role-option">
+            <input type="radio" name="role" value="pembeli" checked>
+            <span><i class="fas fa-user"></i> Pembeli</span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="penjual">
+            <span><i class="fas fa-store"></i> Penjual</span>
+          </label>
+        </div>
+      </div>
+      <div class="field" id="fieldNamaToko" style="display:none;">
+        <label for="namaToko">Nama Toko</label>
+        <input type="text" id="namaToko" placeholder="contoh: Toko Baju Mantap">
+      </div>
+      <button type="submit" class="btn" id="btnRegister">Daftar Sekarang</button>
+    </form>
+    <div class="footer-link">
+      Sudah punya akun? <a href="/auth/login.html">Masuk di sini</a>
+    </div>
+    <div class="back-home">
+      <a href="/index.html"><i class="fas fa-arrow-left"></i> Kembali ke beranda</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from '../firebase-config.js';
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { redirectByRole } from './auth-guard.js';
+
+    // Tampilkan/sembunyikan field "Nama Toko" berdasarkan pilihan role
+    const radios = document.querySelectorAll('input[name="role"]');
+    const fieldNamaToko = document.getElementById('fieldNamaToko');
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        const role = document.querySelector('input[name="role"]:checked').value;
+        fieldNamaToko.style.display = (role === 'penjual') ? 'block' : 'none';
+      });
+    });
+
+    const form = document.getElementById('formRegister');
+    const btn  = document.getElementById('btnRegister');
+    const err  = document.getElementById('msgError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.innerText = '';
+      btn.disabled = true;
+      btn.innerText = 'Mendaftarkan...';
+
+      const nama     = document.getElementById('nama').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const role     = document.querySelector('input[name="role"]:checked').value;
+      const namaToko = document.getElementById('namaToko').value.trim();
+
+      if (role === 'penjual' && !namaToko) {
+        err.innerText = 'Nama toko wajib diisi untuk penjual.';
+        btn.disabled = false;
+        btn.innerText = 'Daftar Sekarang';
+        return;
+      }
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+        const sekarang = Date.now();
+
+        // Tulis users/{uid} — data peran & profil dasar
+        await set(ref(db, 'users/' + uid), {
+          role: role,
+          nama: nama,
+          email: email,
+          dibuatPada: sekarang
+        });
+
+        // Kalau penjual, buat profil toko di penjual/{uid}
+        if (role === 'penjual') {
+          await set(ref(db, 'penjual/' + uid), {
+            namaToko: namaToko,
+            deskripsi: '',
+            foto: '',
+            rating: 0,
+            totalTerjual: 0,
+            bergabungPada: sekarang
+          });
+        }
+
+        redirectByRole(role);
+      } catch (e2) {
+        err.innerText = terjemahanError(e2.code) || e2.message;
+        btn.disabled = false;
+        btn.innerText = 'Daftar Sekarang';
+      }
+    });
+
+    function terjemahanError(code) {
+      const map = {
+        'auth/email-already-in-use': 'Email sudah terdaftar. Silakan login.',
+        'auth/invalid-email': 'Format email tidak valid.',
+        'auth/weak-password': 'Password terlalu lemah (min. 6 karakter).',
+        'auth/operation-not-allowed': 'Pendaftaran email/password belum diaktifkan di Firebase.'
+      };
+      return map[code];
+    }
+  </script>
+</body>
+</html>
