@@ -9,46 +9,76 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-<header>
-  <div class="top-bar">
-    <a href="index.html" class="logo">
-      <i class="fas fa-arrow-left"></i> Kembali
-    </a>
-    <div class="nav-actions">
-      <a href="keranjang.html">
+  <body>
+  <!-- HEADER (sama seperti index.html) -->
+  <div class="header">
+    <div class="search-bar">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="cariProduk" placeholder="Cari produk favoritmu...">
+    </div>
+    <div class="header-icons">
+      <a href="keranjang.html" class="cart-icon">
         <i class="fas fa-shopping-cart"></i>
-        <span class="cart-badge">0</span>
+        <span class="cart-badge" id="badgeKeranjang">0</span>
+      </a>
+      <a href="#" onclick="bukaAkun(); return false;">
+        <i class="fas fa-user"></i>
       </a>
     </div>
   </div>
-</header>
 
-<nav class="bottom-nav">
-  <a href="index.html">
-    <i class="fas fa-home"></i>
-    <span>Beranda</span>
-  </a>
-  <a href="produk.html" class="active">
-    <i class="fas fa-th-large"></i>
-    <span>Produk</span>
-  </a>
-  <a href="keranjang.html">
-    <i class="fas fa-shopping-cart"></i>
-    <span>Keranjang</span>
-  </a>
-  <a href="pesanan.html">
-    <i class="fas fa-receipt"></i>
-    <span>Pesanan</span>
-  </a>
-  <a href="akun.html">
-    <i class="fas fa-user"></i>
-    <span>Akun</span>
-  </a>
-</nav>
-  
-<!-- Firebase SDK -->
-<script type="module" src="firebase-config.js"></script>
+  <!-- Spacer karena header position:fixed -->
+  <div style="height: 60px;"></div>
+
+  <!-- JUDUL HALAMAN -->
+  <div class="wrap">
+    <div class="section-title">
+      <span>Semua Produk</span>
+    </div>
+
+    <!-- KATEGORI (nilai data-kategori = sama persis dengan index.html) -->
+    <div class="categories">
+      <a href="#" class="category-item aktif" data-kategori="semua">
+        <i class="fas fa-th-large"></i><span>Semua</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="wanita">
+        <i class="fas fa-female"></i><span>Wanita</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="pria">
+        <i class="fas fa-male"></i><span>Pria</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="atasan">
+        <i class="fas fa-tshirt"></i><span>Atasan</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="aksesoris">
+        <i class="fas fa-socks"></i><span>Aksesoris</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="musimdingin">
+        <i class="fas fa-snowflake"></i><span>Musim Dingin</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="promo">
+        <i class="fas fa-fire"></i><span>Promo</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="terlaris">
+        <i class="fas fa-star"></i><span>Terlaris</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="terbaru">
+        <i class="fas fa-clock"></i><span>Terbaru</span>
+      </a>
+      <a href="#" class="category-item" data-kategori="diskon">
+        <i class="fas fa-tag"></i><span>Diskon</span>
+      </a>
+    </div>
+
+    <!-- DAFTAR PRODUK — id HARUS "daftarProduk" -->
+    <div class="products-container">
+      <div class="products-grid" id="daftarProduk">
+        <p style="grid-column:1/-1;text-align:center;color:#888;padding:30px;">Memuat produk dari Firebase...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADER PRODUK -->
+  <script type="module" src="produk-loader.js"></script>
 </body>
 </html>
