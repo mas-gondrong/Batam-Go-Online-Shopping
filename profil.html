@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ee4d2d">
+  <title>Akun Saya | Toko Baju Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: #f5f5f5; padding-bottom: 80px; }
+    .header-akun {
+      background: #ee4d2d;
+      color: white;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+    .header-akun a { color: white; font-size: 20px; text-decoration: none; }
+    .header-akun h3 { font-size: 17px; }
+
+    /* KARTU PROFIL */
+    .profil-card {
+      background: white;
+      margin: 15px;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #ee4d2d;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      margin: 0 auto 12px;
+      overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profil-nama { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 4px; word-break: break-word; }
+    .profil-email { font-size: 13px; color: #888; margin-bottom: 10px; word-break: break-all; }
+    .role-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+    }
+    .role-badge.admin { background: #dc3545; }
+    .role-badge.penjual { background: #6f42c1; }
+    .role-badge.pembeli { background: #28a745; }
+
+    /* MENU */
+    .menu-list {
+      background: white;
+      margin: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 15px;
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item i { width: 24px; color: #ee4d2d; margin-right: 14px; font-size: 16px; }
+    .menu-item .arrow { margin-left: auto; color: #ccc; }
+    .menu-item:active { background: #fafafa; }
+
+    /* TOMBOL LOGOUT */
+    .btn-logout {
+      display: block;
+      width: calc(100% - 30px);
+      margin: 15px;
+      padding: 14px;
+      background: white;
+      color: #dc3545;
+      border: 1px solid #dc3545;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-logout:active { background: #fff5f5; }
+
+    /* LOADING */
+    .loading-state { text-align: center; padding: 60px 20px; color: #888; }
+    .loading-state i { font-size: 32px; color: #ee4d2d; animation: spin 1s linear infinite; }
+    .loading-state p { margin-top: 12px; font-size: 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      border-top: 1px solid #eee;
+      z-index: 99;
+    }
+    .bottom-nav a {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      color: #999;
+      text-decoration: none;
+      font-size: 11px;
+    }
+    .bottom-nav a i { font-size: 18px; display: block; margin-bottom: 2px; }
+    .bottom-nav a.active { color: #ee4d2d; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header-akun">
+    <a href="index.html"><i class="fas fa-arrow-left"></i></a>
+    <h3>Akun Saya</h3>
+  </div>
+
+  <!-- KONTEN (diisi JS setelah cek login) -->
+  <div id="kontenProfil">
+    <div class="loading-state">
+      <i class="fas fa-spinner"></i>
+      <p>Memuat data akun...</p>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <a href="index.html">
+      <i class="fas fa-home"></i><span>Beranda</span>
+    </a>
+    <a href="produk.html">
+      <i class="fas fa-th-large"></i><span>Kategori</span>
+    </a>
+    <a href="keranjang.html">
+      <i class="fas fa-shopping-cart"></i><span>Keranjang</span>
+    </a>
+    <a href="profil.html" class="active">
+      <i class="fas fa-user"></i><span>Akun</span>
+    </a>
+  </nav>
+
+  <!-- FIREBASE -->
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { cekLoginSaatIni, logout } from './auth/auth-guard.js';
+
+    const konten = document.getElementById('kontenProfil');
+
+    // GATE: wajib login. Kalau sudah login, tampilkan profil.
+    cekLoginSaatIni().then(async (info) => {
+      if (!info) {
+        // Belum login → arahkan ke halaman login
+        window.location.href = 'auth/login.html';
+        return;
+      }
+
+      // Baca data lengkap user dari database (untuk dapat nama, role, foto)
+      let nama = info.email || 'Pengguna';
+      let foto = '';
+      try {
+        const snap = await get(ref(db, 'users/' + info.uid));
+        if (snap.exists()) {
+          const data = snap.val();
+          if (data.nama) nama = data.nama;
+          if (data.foto) foto = data.foto;
+        }
+      } catch (err) {
+        console.error('Gagal baca data user:', err);
+      }
+
+      // Inisial avatar dari nama
+      const inisial = (nama || '?').charAt(0).toUpperCase();
+
+      // Label role
+      const roleLabel = {
+        admin: 'Administrator',
+        penjual: 'Penjual',
+        pembeli: 'Pembeli'
+      };
+      const role = info.role || 'pembeli';
+
+      // Menu berbeda per role
+      let menuHTML = `
+        <a href="riwayat.html" class="menu-item">
+          <i class="fas fa-shopping-bag"></i> Riwayat Pesanan
+          <i class="fas fa-chevron-right arrow"></i>
+        </a>
+      `;
+      if (role === 'penjual') {
+        menuHTML += `
+          <a href="admin.html" class="menu-item">
+            <i class="fas fa-store"></i> Kelola Produk Saya
+            <i class="fas fa-chevron-right arrow"></i>
+          </a>
+        `;
+      }
+      if (role === 'admin') {
+        menuHTML += `
+          <a href="admin.html" class="menu-item">
+            <i class="fas fa-cog"></i> Panel Admin
+            <i class="fas fa-chevron-right arrow"></i>
+          </a>
+        `;
+      }
+      menuHTML += `
+        <a href="#" class="menu-item" onclick="alert('Fitur ini akan segera hadir'); return false;">
+          <i class="fas fa-map-marker-alt"></i> Alamat Pengiriman
+          <i class="fas fa-chevron-right arrow"></i>
+        </a>
+        <a href="#" class="menu-item" onclick="alert('Fitur ini akan segera hadir'); return false;">
+          <i class="fas fa-user-edit"></i> Edit Profil
+          <i class="fas fa-chevron-right arrow"></i>
+        </a>
+      `;
+
+      // Render halaman
+      konten.innerHTML = `
+        <div class="profil-card">
+          <div class="avatar">${foto ? `<img src="${foto}" alt="${nama}">` : inisial}</div>
+          <div class="profil-nama">${nama}</div>
+          <div class="profil-email">${info.email || ''}</div>
+          <span class="role-badge ${role}">${roleLabel[role] || 'Pengguna'}</span>
+        </div>
+
+        <div class="menu-list">
+          ${menuHTML}
+        </div>
+
+        <button class="btn-logout" id="btnLogout">
+          <i class="fas fa-sign-out-alt"></i> Keluar / Logout
+        </button>
+      `;
+
+      // Handler tombol logout
+      const btnLogout = document.getElementById('btnLogout');
+      if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+          if (confirm('Yakin ingin keluar dari akun ini?')) {
+            logout();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html> 
