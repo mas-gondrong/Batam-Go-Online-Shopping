@@ -116,43 +116,8 @@
     <button class="akun-close" onclick="tutupAkun()">×</button>
   </div>
 
-  <div class="akun-body">
-    <ul class="akun-menu">
-      <li>
-        <a href="admin.html" class="admin-link">
-          <i class="fas fa-cog"></i>
-          Buka Panel Admin
-        </a>
-      </li>
-
-      <li>
-        <a href="#">
-          <i class="fas fa-heart"></i>
-          Wishlist
-        </a>
-      </li>
-
-      <li>
-  <a href="riwayat.html">
-    <i class="fas fa-shopping-bag"></i>
-    Pesanan Saya
-  </a>
-     </li>
-
-      <li>
-        <a href="#">
-          <i class="fas fa-map-marker-alt"></i>
-          Alamat Pengiriman
-        </a>
-      </li>
-
-      <li>
-        <a href="#">
-          <i class="fas fa-user-edit"></i>
-          Edit Profil
-        </a>
-      </li>
-    </ul>
+  <div class="akun-body" id="akunBody">
+    <p style="text-align:center;padding:20px;color:#888;">Memuat data akun...</p>
   </div>
 </div>
 
@@ -170,6 +135,86 @@ function tutupAkun() {
   
   <!-- Firebase SDK -->
 <script type="module" src="firebase-config.js"></script>
+
+<!-- RENDER MODAL AKUN BERDASARKAN STATUS LOGIN -->
+<script type="module">
+  import { auth, db } from './firebase-config.js';
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { logout } from './auth/auth-guard.js';
+
+  const akunBody = document.getElementById('akunBody');
+
+  async function renderAkunModal(user) {
+    if (!akunBody) return;
+    if (!user) {
+      // Belum login
+      akunBody.innerHTML = `
+        <div style="text-align:center;padding:24px 20px;">
+          <i class="fas fa-user-circle" style="font-size:52px;color:#ddd;"></i>
+          <p style="margin:12px 0 4px;color:#333;font-weight:600;font-size:15px;">Kamu belum login</p>
+          <p style="color:#888;font-size:13px;margin-bottom:16px;">Masuk untuk belanja & lihat pesananmu</p>
+          <a href="auth/login.html" style="display:block;background:#ee4d2d;color:white;padding:12px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">
+            <i class="fas fa-sign-in-alt"></i> Masuk / Daftar
+          </a>
+        </div>
+      `;
+      return;
+    }
+
+    // Sudah login — baca role & nama dari DB
+    let role = 'pembeli';
+    let nama = user.displayName || user.email || 'Pengguna';
+    try {
+      const snap = await get(ref(db, 'users/' + user.uid));
+      if (snap.exists()) {
+        const d = snap.val();
+        if (d.role) role = d.role;
+        if (d.nama) nama = d.nama;
+      }
+    } catch (e) { console.error('Gagal baca role:', e); }
+
+    const roleLabel = { admin: 'Administrator', penjual: 'Penjual', pembeli: 'Pembeli' };
+    const roleColor = { admin: '#dc3545', penjual: '#6f42c1', pembeli: '#28a745' };
+
+    let menuTambahan = '';
+    if (role === 'penjual' || role === 'admin') {
+      menuTambahan += `
+        <li><a href="admin.html"><i class="fas fa-cog"></i> ${role === 'admin' ? 'Panel Admin' : 'Kelola Produk'}</a></li>
+      `;
+    }
+
+    akunBody.innerHTML = `
+      <div style="text-align:center;padding:20px;border-bottom:1px solid #f0f0f0;">
+        <div style="width:64px;height:64px;border-radius:50%;background:#ee4d2d;color:white;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:bold;margin:0 auto 10px;">
+          ${nama.charAt(0).toUpperCase()}
+        </div>
+        <div style="font-weight:600;color:#333;font-size:15px;word-break:break-word;">${nama}</div>
+        <div style="color:#888;font-size:12px;margin:2px 0 8px;word-break:break-all;">${user.email || ''}</div>
+        <span style="display:inline-block;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;color:white;background:${roleColor[role] || '#28a745'};">${roleLabel[role] || 'Pengguna'}</span>
+      </div>
+      <ul class="akun-menu">
+        <li><a href="profil.html"><i class="fas fa-user"></i> Akun Saya</a></li>
+        <li><a href="riwayat.html"><i class="fas fa-shopping-bag"></i> Pesanan Saya</a></li>
+        ${menuTambahan}
+        <li><a href="#" id="linkLogoutModal"><i class="fas fa-sign-out-alt" style="color:#dc3545;"></i> <span style="color:#dc3545;">Keluar</span></a></li>
+      </ul>
+    `;
+
+    const linkLogout = document.getElementById('linkLogoutModal');
+    if (linkLogout) {
+      linkLogout.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm('Yakin ingin keluar dari akun ini?')) {
+          logout();
+        }
+      });
+    }
+  }
+
+  // Render saat auth state berubah (login/logout)
+  onAuthStateChanged(auth, renderAkunModal);
+</script>
 
 <!-- Hubungkan Firebase & Baca Produk (VERSI BENAR) -->
 <script type="module">
@@ -319,4 +364,4 @@ function updateBadgeKeranjang(){
 window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
   </script>
 </body>
-</html>
+</html> 
