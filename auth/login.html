@@ -29,9 +29,17 @@
     .footer-link a { color: #ee4d2d; text-decoration: none; }
     .back-home { text-align: center; margin-top: 14px; }
     .back-home a { color: #888; font-size: 13px; text-decoration: none; }
+    .auth-loading { position: fixed; inset: 0; background: #f5f5f5; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; }
+    .auth-loading i { font-size: 32px; color: #ee4d2d; animation: spin 1s linear infinite; }
+    .auth-loading p { margin-top: 12px; color: #666; font-size: 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+  <div class="auth-loading" id="authLoading">
+    <i class="fas fa-spinner"></i>
+    <p>Memeriksa login...</p>
+  </div>
   <div class="card">
     <div class="logo">
       <i class="fas fa-shopping-bag"></i>
@@ -62,9 +70,15 @@
     import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import { cekLoginSaatIni, bacaRole, redirectByRole } from './auth-guard.js';
 
-    // Kalau user sudah login, langsung redirect sesuai role
+    // Kalau user sudah login, langsung redirect sesuai role.
+    // Kalau belum, sembunyikan overlay loading & tampilkan form login.
     cekLoginSaatIni().then(info => {
-      if (info) redirectByRole(info.role);
+      if (info) {
+        redirectByRole(info.role);
+      } else {
+        const overlay = document.getElementById('authLoading');
+        if (overlay) overlay.style.display = 'none';
+      }
     });
 
     const form = document.getElementById('formLogin');
