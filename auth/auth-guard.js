@@ -11,9 +11,11 @@
 import { auth, db } from '../firebase-config.js';
 import {
   onAuthStateChanged,
-  signOut
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { ref, get, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 console.log('🛡️ [auth-guard] File auth-guard.js berhasil dimuat');
 
@@ -131,7 +133,7 @@ function redirectByRole(role) {
   if (role === 'admin') {
     window.location.href = '../admin.html';
   } else if (role === 'penjual') {
-    window.location.href = '../admin.html';
+    window.location.href = '../index.html';
   } else if (role === 'pembeli') {
     window.location.href = '../index.html';
   } else {
@@ -166,6 +168,42 @@ async function lindungiHalaman(roleDiizinkan = ['admin', 'penjual']) {
 /**
  * Logout.
  */
+/**
+ * Login / daftar cepat via Google.
+ * - User Google yang belum ada di DB → buat data default (role pembeli).
+ * - User yang sudah ada → pakai role tersimpan.
+ * Mengembalikan { uid, email, role, baru }.
+ */
+const googleProvider = new GoogleAuthProvider();
+
+async function loginDenganGoogle(roleDefault = 'pembeli') {
+  console.log('🔵 [auth-guard] loginDenganGoogle() dipanggil, roleDefault:', roleDefault);
+  const cred = await signInWithPopup(auth, googleProvider);
+  const user = cred.user;
+  console.log('🔵 [auth-guard] Google sign-in OK, uid:', user.uid, '| email:', user.email);
+
+  const snap = await get(ref(db, 'users/' + user.uid));
+  if (snap.exists()) {
+    const data = snap.val();
+    console.log('🔵 [auth-guard] User sudah terdaftar, role:', data.role);
+    return { uid: user.uid, email: user.email, role: data.role, baru: false };
+  }
+
+  console.log('🔵 [auth-guard] User baru, buat data default role:', roleDefault);
+  const sekarang = Date.now();
+  await set(ref(db, 'users/' + user.uid), {
+    role: roleDefault,
+    nama: user.displayName || '',
+    email: user.email || '',
+    foto: user.photoURL || '',
+    dibuatPada: sekarang
+  });
+  return { uid: user.uid, email: user.email, role: roleDefault, baru: true };
+}
+
+/**
+ * Logout.
+ */
 async function logout() {
   try {
     await signOut(auth);
@@ -176,4 +214,4 @@ async function logout() {
   window.location.href = pathLogin;
 }
 
-export { cekLoginSaatIni, bacaRole, redirectByRole, lindungiHalaman, logout }; 
+export { cekLoginSaatIni, bacaRole, redirectByRole, lindungiHalaman, logout, loginDenganGoogle }; 
