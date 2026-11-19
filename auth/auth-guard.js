@@ -1,6 +1,9 @@
-// ===== AUTH GUARD =====
+// ===== AUTH GUARD (versi debug — dengan logging detail) =====
 // File ini berisi fungsi-fungsi otentikasi yang dipakai bersama
 // oleh login.html, register.html, admin.html, dan halaman lain.
+//
+// Versi ini punya console.log di setiap langkah supaya kita bisa
+// lihat di F12 → Console persis apa yang terjadi saat login.
 //
 // Lokasi: /auth/auth-guard.js
 // Impor firebase-config.js dari satu level ke atas: '../firebase-config.js'
@@ -12,35 +15,46 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
+console.log('🛡️ [auth-guard] File auth-guard.js berhasil dimuat');
+
 /**
  * Cek apakah ada user yang sedang login.
  * Mengembalikan Promise<{ uid, email, role }> kalau login, atau null kalau tidak.
- *
- * Cara kerja: dengarkan onAuthStateChanged ( sekali pakai dengan resolve),
- * lalu baca role dari database.
  */
 function cekLoginSaatIni() {
+  console.log('🔍 [auth-guard] cekLoginSaatIni() dipanggil');
   return new Promise((resolve) => {
     let sudahResolve = false;
 
     onAuthStateChanged(auth, async (user) => {
-      if (sudahResolve) return; // hindari resolve ganda
+      console.log('🔔 [auth-guard] onAuthStateChanged fired, user:', user ? {
+        uid: user.uid,
+        email: user.email
+      } : null);
+
+      if (sudahResolve) {
+        console.log('⚠️ [auth-guard] sudah resolve sebelumnya, skip');
+        return;
+      }
       sudahResolve = true;
 
       if (!user) {
+        console.log('ℹ️ [auth-guard] Tidak ada user login → resolve null');
         resolve(null);
         return;
       }
 
+      console.log('👤 [auth-guard] User login:', user.uid, '| email:', user.email);
       try {
         const role = await bacaRole(user.uid);
+        console.log('🎭 [auth-guard] Role dari DB:', role);
         resolve({
           uid: user.uid,
           email: user.email,
           role: role
         });
       } catch (err) {
-        console.error('❌ Gagal baca role di cekLoginSaatIni:', err);
+        console.error('❌ [auth-guard] Gagal baca role di cekLoginSaatIni:', err);
         resolve({
           uid: user.uid,
           email: user.email,
@@ -56,23 +70,64 @@ function cekLoginSaatIni() {
  * Mengembalikan: "pembeli" | "penjual" | "admin" | null
  */
 async function bacaRole(uid) {
-  if (!uid) return null;
-  const snap = await get(ref(db, 'users/' + uid + '/role'));
-  return snap.exists() ? snap.val() : null;
+  console.log('📖 [auth-guard] bacaRole() dipanggil untuk uid:', JSON.stringify(uid));
+  console.log('📖 [auth-guard] Panjang uid:', uid ? uid.length : 'null');
+
+  if (!uid) {
+    console.warn('⚠️ [auth-guard] uid kosong/null, return null');
+    return null;
+  }
+
+  const path = 'users/' + uid + '/role';
+  console.log('📖 [auth-guard] Path yang dibaca:', path);
+
+  try {
+    const snap = await get(ref(db, path));
+    console.log('📦 [auth-guard] Snapshot exists?', snap.exists());
+    console.log('📦 [auth-guard] Snapshot val():', JSON.stringify(snap.val()));
+
+    if (snap.exists()) {
+      const val = snap.val();
+      console.log('✅ [auth-guard] Role ditemukan:', val);
+      return val;
+    } else {
+      console.warn('⚠️ [auth-guard] Role TIDAK DITEMUKAN di path:', path);
+      // Coba baca node users/{uid} utuh untuk debugging
+      console.log('🔬 [auth-guard] Coba baca users/' + uid + ' utuh...');
+      const snap2 = await get(ref(db, 'users/' + uid));
+      console.log('🔬 [auth-guard] Node users/{uid} exists?', snap2.exists());
+      if (snap2.exists()) {
+        console.log('🔬 [auth-guard] Isi users/{uid}:', JSON.stringify(snap2.val(), null, 2));
+        // Coba baca node users/ utuh (untuk lihat semua key yang ada)
+        console.log('🔬 [auth-guard] Coba baca users/ utuh...');
+        const snap3 = await get(ref(db, 'users'));
+        if (snap3.exists()) {
+          const usersData = snap3.val();
+          console.log('🔬 [auth-guard] Semua key di users/:', Object.keys(usersData || {}));
+          console.log('🔬 [auth-guard] UID yang dicari:', JSON.stringify(uid));
+          console.log('🔬 [auth-guard] Apakah uid ada di users/?', Object.keys(usersData || {}).includes(uid));
+        } else {
+          console.warn('⚠️ [auth-guard] Node users/ KOSONG / tidak ada sama sekali!');
+        }
+      } else {
+        console.warn('⚠️ [auth-guard] Node users/' + uid + ' TIDAK ADA');
+      }
+      return null;
+    }
+  } catch (err) {
+    console.error('💥 [auth-guard] ERROR saat bacaRole:', err);
+    console.error('💥 [auth-guard] Error code:', err.code);
+    console.error('💥 [auth-guard] Error message:', err.message);
+    throw err;
+  }
 }
 
 /**
  * Redirect user berdasarkan role.
- * Pakai path RELATIF supaya jalan di GitHub Pages subpath (/Toko-Baju-Online/).
- *
- * - admin   → ../admin.html   (panel admin platform)
- * - penjual → ../admin.html   (sementara pakai admin.html; nanti dipindah ke seller.html)
- * - pembeli → ../index.html   (beranda pembeli)
- * - lainnya → balik ke login
- *
- * Dipanggil dari /auth/*.html, jadi path pakai ../
+ * Pakai path RELATIF supaya jalan di GitHub Pages subpath.
  */
 function redirectByRole(role) {
+  console.log('🚀 [auth-guard] redirectByRole() dipanggil, role:', role);
   if (role === 'admin') {
     window.location.href = '../admin.html';
   } else if (role === 'penjual') {
@@ -80,50 +135,36 @@ function redirectByRole(role) {
   } else if (role === 'pembeli') {
     window.location.href = '../index.html';
   } else {
-    // role tidak dikenal / belum diset → balik ke login
+    console.warn('⚠️ [auth-guard] Role tidak dikenal:', role, '→ balik ke login');
     window.location.href = 'login.html';
   }
 }
 
 /**
- * Guard untuk halaman yang butuh login (admin.html, seller.html, dll).
- * Pakai di awal script halaman: kalau belum login / role tidak sesuai,
- * user dibuang ke /auth/login.html.
- *
- * @param {string[]} roleDiizinkan - mis. ['admin','penjual']
- * @returns {Promise<{uid,email,role}|null>} info user kalau lolos, null kalau di-redirect
+ * Guard untuk halaman yang butuh login.
  */
 async function lindungiHalaman(roleDiizinkan = ['admin', 'penjual']) {
   const info = await cekLoginSaatIni();
-
   if (!info) {
-    // belum login → ke halaman login
-    // (dipanggil dari halaman root, jadi path ke auth/login.html)
-    const pathLogin = window.location.pathname.includes('/auth/')
-      ? 'login.html'
-      : 'auth/login.html';
+    const pathLogin = window.location.pathname.includes('/auth/') ? 'login.html' : 'auth/login.html';
     window.location.href = pathLogin;
     return null;
   }
-
   if (!info.role) {
     alert('Akun belum punya data peran. Hubungi admin.');
     await logout();
     return null;
   }
-
   if (!roleDiizinkan.includes(info.role)) {
-    // role tidak diizinkan → redirect ke halaman sesuai role-nya
     alert('Akses ditolak. Halaman ini hanya untuk: ' + roleDiizinkan.join(', '));
     redirectByRole(info.role);
     return null;
   }
-
   return info;
 }
 
 /**
- * Logout: sign out dari Firebase + balik ke halaman login.
+ * Logout.
  */
 async function logout() {
   try {
@@ -131,10 +172,7 @@ async function logout() {
   } catch (err) {
     console.error('❌ Gagal logout:', err);
   }
-  // kalau dipanggil dari /auth/ langsung login.html, kalau dari root → auth/login.html
-  const pathLogin = window.location.pathname.includes('/auth/')
-    ? 'login.html'
-    : 'auth/login.html';
+  const pathLogin = window.location.pathname.includes('/auth/') ? 'login.html' : 'auth/login.html';
   window.location.href = pathLogin;
 }
 
