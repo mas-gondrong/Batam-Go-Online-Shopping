@@ -105,18 +105,18 @@
       background:#ff9f1a;
       color:white;
       border:none;
-      padding:8px;
+      padding:12px;
       border-radius:6px;
-      font-size:12px;
+      font-size:16px;
     }
     .btn-beli {
       flex:1;
       background:#ee4d2d;
       color:white;
       border:none;
-      padding:8px;
+      padding:12px;
       border-radius:6px;
-      font-size:12px;
+      font-size:16px;
     }
 
     .toast-sukses{
@@ -126,7 +126,7 @@
   transform:translateX(-50%);
   background-color:#22c55e;
   color:#ffffff;
-  padding:14px 30px;
+  padding:14px 22px;
   border-radius:8px;
   z-index:9999;
   display:none;
@@ -150,8 +150,18 @@
 
 <!-- Script Baca Detail Produk (PERBAIKAN) -->
 <script type="module">
-import { db } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+// Cek apakah pembeli sudah login. Kalau belum, arahkan ke halaman login.
+function cekLoginDulu() {
+  if (!auth.currentUser) {
+    alert('🛒 Silakan login atau daftar dulu untuk membeli.');
+    window.location.href = 'auth/login.html';
+    return false;
+  }
+  return true;
+}
 
 // Ambil ID dari URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -194,6 +204,7 @@ if(!idProduk){
     // ✅ HAPUS updateBadgeKeranjang()
     const btnKeranjang = document.getElementById("btnTambahKeranjang");
     btnKeranjang.onclick = function(){
+      if (!cekLoginDulu()) return;
       btnKeranjang.disabled = true;
       btnKeranjang.innerText = "Sedang Menambahkan...";
 
@@ -229,6 +240,7 @@ if(!idProduk){
      // ✅ BELI SEKARANG
     const btnBeli = document.getElementById("btnBeliSekarang");
     btnBeli.onclick = function(){
+      if (!cekLoginDulu()) return;
       const keranjangLama = JSON.parse(localStorage.getItem("keranjangToko")) || [];
       const cekSudahAda = keranjangLama.find(x => x.id === idProduk);
 
@@ -270,4 +282,3 @@ if(!idProduk){
 <div class="toast-sukses" id="toastSukses">✅ Berhasil dimasukkan ke Keranjang!</div>
 </body>
 </html>
-  
