@@ -183,19 +183,33 @@ input, textarea {
 <script type="module">
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { ref, push } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { ref, push, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 let userLogin = null;
 
 // GATE via onAuthStateChanged: tunggu auth state dikonfirmasi dulu
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert('🛒 Silakan login dulu untuk menyelesaikan pesanan.');
     window.location.href = 'auth/login.html';
   } else {
     userLogin = user;
+    isiAlamatTersimpan();
   }
 });
+
+// Auto-isi alamat dari data tersimpan di profil pembeli (supaya tidak ketik ulang)
+async function isiAlamatTersimpan() {
+  try {
+    const snap = await get(ref(db, 'users/' + userLogin.uid + '/alamatPengiriman'));
+    if (snap.exists()) {
+      const a = snap.val();
+      if (a.namaPenerima) document.getElementById('namaPenerima').value = a.namaPenerima;
+      if (a.noHp)         document.getElementById('noHp').value = a.noHp;
+      if (a.alamat)       document.getElementById('alamatLengkap').value = a.alamat;
+    }
+  } catch (e) { console.error('Gagal baca alamat tersimpan:', e); }
+}
 
 const ONGKIR = 15000;
 const wadahBarang = document.getElementById("daftarBarangCheckout");
