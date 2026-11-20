@@ -1,8 +1,4 @@
-// ===================================================
-//  SERVICE WORKER — Toko Baju Online (PWA)
-//  Versi fault-tolerant: 1 aset gagal tidak crash install
-// ===================================================
-const CACHE_NAME = 'toko-baju-v79';
+const CACHE_NAME = 'toko-baju-v80';
 const ASSETS = [
   './',
   './index.html',
