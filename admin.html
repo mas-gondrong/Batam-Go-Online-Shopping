@@ -364,6 +364,11 @@
       background: #cce5ff;
       color: #004085;
     }
+
+    .order-status.siapdikirim {
+      background: #d1f5e8;
+      color: #0d6b56;
+    }
     
     /* NAV BAWAH ADMIN */
     .admin-bottom-nav {
@@ -414,7 +419,7 @@
 </head>
 <body>
 
-<!-- Loading overlay saat cek auth -->
+  <!-- Loading overlay saat cek auth -->
 <div class="auth-loading" id="authLoading">
   <i class="fas fa-spinner"></i>
   <p>Memeriksa login...</p>
@@ -489,55 +494,9 @@
         <div>Aksi</div>
       </div>
       
-      <div class="table-row">
-        <div class="product-name-cell">
-          <img src="https://picsum.photos/id/21/100/100" class="product-thumb" alt="">
-          <span>Kaos Putih Polos...</span>
-        </div>
-        <div>Rp 79rb</div>
-        <div>50</div>
-        <div>
-          <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-        </div>
-      </div>
-      
-      <div class="table-row">
-        <div class="product-name-cell">
-          <img src="https://picsum.photos/id/22/100/100" class="product-thumb" alt="">
-          <span>Kemeja Flanel...</span>
-        </div>
-        <div>Rp 149rb</div>
-        <div>35</div>
-        <div>
-          <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-        </div>
-      </div>
-      
-      <div class="table-row">
-        <div class="product-name-cell">
-          <img src="https://picsum.photos/id/23/100/100" class="product-thumb" alt="">
-          <span>Blouse Wanita...</span>
-        </div>
-        <div>Rp 125rb</div>
-        <div>28</div>
-        <div>
-          <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-        </div>
-      </div>
-      
-      <div class="table-row">
-        <div class="product-name-cell">
-          <img src="https://picsum.photos/id/24/100/100" class="product-thumb" alt="">
-          <span>Hoodie Jaket...</span>
-        </div>
-        <div>Rp 199rb</div>
-        <div>12</div>
-        <div>
-          <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+      <div id="daftarProdukAdmin">
+        <div style="padding:24px 12px;text-align:center;color:#888;font-size:13px;">
+          <i class="fas fa-spinner fa-spin" style="color:#ee4d2d;"></i> Memuat produk dari database...
         </div>
       </div>
     </div>
@@ -762,10 +721,10 @@ function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKA
 }
 </script>
 
-  <!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
+<!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
 <script type="module">
 import { auth, db } from "./firebase-config.js";
-import { ref, push, set, onValue, update }
+import { ref, push, set, onValue, update, remove }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 import { lindungiHalaman, logout } from "./auth/auth-guard.js";
 
@@ -779,8 +738,67 @@ lindungiHalaman(['admin']).then(info => {
     if (emailEl && info.email) {
       emailEl.textContent = info.email;
     }
+    // Muat daftar produk real dari Firebase (mengganti demo statis picsum)
+    muatProdukAdmin();
   }
 });
+
+// === DAFTAR PRODUK (semua produk dari Firebase, admin bisa hapus) ===
+function muatProdukAdmin() {
+  const wadah = document.getElementById('daftarProdukAdmin');
+  if (!wadah) return;
+  onValue(ref(db, 'produk'), (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      wadah.innerHTML = `<div style="padding:24px 12px;text-align:center;color:#888;font-size:13px;">
+        <i class="fas fa-box-open" style="font-size:28px;color:#ddd;"></i><br>
+        Belum ada produk. Produk yang ditambahkan penjual/admin akan muncul di sini.
+      </div>`;
+      return;
+    }
+    const list = Object.entries(data).map(([id, v]) => ({ id, ...v }));
+    wadah.innerHTML = list.map(p => {
+      const fotoHtml = p.foto
+        ? `<img src="${p.foto}" class="product-thumb" alt="" onerror="this.style.display='none'">`
+        : `<div class="product-thumb" style="display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#bbb;font-size:11px;">no img</div>`;
+      const nama = (p.nama || '(Tanpa nama)').slice(0, 28);
+      return `
+        <div class="table-row">
+          <div class="product-name-cell">
+            ${fotoHtml}
+            <span>${nama}</span>
+          </div>
+          <div>Rp ${Number(p.harga || 0).toLocaleString('id-ID')}</div>
+          <div>${Number(p.stok || 0)}</div>
+          <div>
+            <button class="btn btn-sm btn-danger btn-hapus-produk" data-id="${p.id}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Handler tombol hapus produk
+    wadah.querySelectorAll('.btn-hapus-produk').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const idProduk = btn.dataset.id;
+        if (!confirm('Yakin hapus produk ini? Produk hilang dari beranda pembeli.')) return;
+        try {
+          await remove(ref(db, 'produk/' + idProduk));
+          alert('✅ Produk dihapus.');
+        } catch (err) {
+          alert('❌ Gagal hapus: ' + err.message);
+        }
+      });
+    });
+  }, (err) => {
+    console.error('Gagal muat produk admin:', err);
+    wadah.innerHTML = `<div style="padding:20px;text-align:center;color:#dc3545;font-size:13px;">
+      Gagal memuat produk: ${err.message}
+    </div>`;
+  });
+}
 
 // === TOMBOL LOGOUT ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -902,8 +920,16 @@ document.addEventListener("DOMContentLoaded", () => {
     wadahPesananAdmin.innerHTML = listPesanan.map(pesanan => {
       let kelasStatus = "";
       if (pesanan.status === "Menunggu Diproses") kelasStatus = "menunggu";
+      if (pesanan.status === "Siap Dikirim")      kelasStatus = "siapdikirim";
       if (pesanan.status === "Sedang Dikirim")    kelasStatus = "proses";
       if (pesanan.status === "Selesai")            kelasStatus = "selesai";
+
+      // Info "Siap dikirim penjual" kalau penjual sudah tandai via seller.html
+      let htmlSiapDikirim = '';
+      if (pesanan.siapDikirimPada) {
+        const tglSiap = new Date(pesanan.siapDikirimPada).toLocaleString('id-ID');
+        htmlSiapDikirim = `<div style="font-size:12px;color:#0d6b56;margin:6px 0;padding:6px 8px;background:#d1f5e8;border-radius:5px;"><i class="fas fa-box"></i> ✓ Siap dikirim penjual: ${tglSiap}</div>`;
+      }
 
       // Info "Diterima pembeli" kalau pembeli sudah konfirmasi via riwayat.html
       let htmlDiterima = '';
@@ -924,6 +950,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <strong>Alamat:</strong> ${pesanan.alamat || "-"}<br>
             <strong>Total:</strong> Rp ${Number(pesanan.totalBayar || 0).toLocaleString('id-ID')}
           </div>
+          ${htmlSiapDikirim}
           ${htmlDiterima}
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-sm btn-warning" data-id="${pesanan.id}" data-status="Menunggu Diproses">Menunggu</button>
