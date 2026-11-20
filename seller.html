@@ -685,10 +685,18 @@
             `;
           }).join('');
 
+          // Info "Diterima pembeli" kalau pembeli sudah konfirmasi (sync dari riwayat.html)
+          let htmlDiterima = '';
+          if (pesan.diterimaPada) {
+            const tglDiterima = new Date(pesan.diterimaPada).toLocaleString('id-ID');
+            htmlDiterima = `<div style="font-size:12px;color:#28a745;margin:6px 0;padding:6px 8px;background:#eafaf1;border-radius:5px;"><i class="fas fa-check-circle"></i> Diterima pembeli: ${tglDiterima}</div>`;
+          }
+
           return `
             <div class="pesanan-card">
               <span class="status ${kelasStatus}">${escapeHtml(status)}</span>
               <div class="tanggal">${escapeHtml(pesan.tanggal || '-')}</div>
+              ${htmlDiterima}
               <div class="pembeli">
                 <strong>Pembeli:</strong> ${escapeHtml(pesan.namaPenerima || '-')}<br>
                 <strong>HP:</strong> ${escapeHtml(pesan.noHp || '-')}<br>
