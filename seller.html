@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ee4d2d">
+  <title>Dashboard Penjual | Toko Baju Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: #f5f5f5; padding-bottom: 80px; }
+
+    /* HEADER */
+    .header {
+      background: #ee4d2d;
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+    .header a { color: white; font-size: 20px; text-decoration: none; }
+    .header h2 { font-size: 17px; flex: 1; }
+    .header .btn-logout {
+      color: white; font-size: 18px; text-decoration: none;
+      background: rgba(255,255,255,0.2); width: 36px; height: 36px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .user-email { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 2px; }
+
+    /* STATS */
+    .stats-row {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      overflow-x: auto;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 100px;
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .stat-card h3 { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 4px; }
+    .stat-card .value { font-size: 22px; font-weight: bold; color: #ee4d2d; }
+    .stat-card small { display: block; font-size: 10px; color: #aaa; margin-top: 2px; }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: white;
+      border-bottom: 2px solid #f0f0f0;
+      position: sticky;
+      top: 60px;
+      z-index: 90;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px 4px;
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      font-weight: 600;
+    }
+    .tab i { display: block; font-size: 16px; margin-bottom: 3px; }
+    .tab.active { color: #ee4d2d; border-bottom-color: #ee4d2d; }
+
+    .tab-content { display: none; padding: 15px; }
+    .tab-content.active { display: block; }
+
+    /* DAFTAR PRODUK */
+    .produk-row {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .produk-row img {
+      width: 64px; height: 64px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #f5f5f5;
+    }
+    .produk-info { flex: 1; min-width: 0; }
+    .produk-info .nama { font-size: 14px; font-weight: 600; color: #333; line-height: 1.3; word-break: break-word; }
+    .produk-info .harga { font-size: 13px; color: #ee4d2d; font-weight: 600; margin-top: 2px; }
+    .produk-info .meta { font-size: 11px; color: #999; margin-top: 2px; }
+    .produk-aksi { display: flex; flex-direction: column; gap: 6px; }
+    .btn-aksi {
+      border: none; padding: 6px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .btn-aksi.edit { background: #007bff; color: white; }
+    .btn-aksi.hapus { background: #dc3545; color: white; }
+
+    /* FORM */
+    .form-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .form-card h3 { font-size: 16px; margin-bottom: 14px; color: #333; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 5px; font-weight: 600; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 9px 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; font-family: Arial, sans-serif;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: #ee4d2d; }
+    .form-group small { color: #888; font-size: 11px; }
+    .kategori-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; font-size: 13px; margin-top: 4px; }
+    .kategori-grid label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 400; }
+    #previewFoto { width: 100%; max-width: 180px; height: auto; border-radius: 6px; margin-top: 6px; }
+    .btn-simpan-form {
+      width: 100%; background: #ee4d2d; color: white; border: none;
+      padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;
+    }
+    .btn-simpan-form:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-reset-form {
+      width: 100%; background: white; color: #666; border: 1px solid #ddd;
+      padding: 10px; border-radius: 8px; font-size: 13px; cursor: pointer; margin-top: 8px;
+    }
+
+    /* PESANAN */
+    .pesanan-card {
+      background: white; border-radius: 8px; padding: 14px; margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .pesanan-card .status {
+      display: inline-block; padding: 4px 10px; border-radius: 4px; color: white; font-size: 11px; font-weight: 600; margin-bottom: 8px;
+    }
+    .status.menunggu { background: #f59e0b; }
+    .status.dikirim { background: #3b82f6; }
+    .status.selesai { background: #22c55e; }
+    .pesanan-card .tanggal { font-size: 11px; color: #999; margin-bottom: 8px; }
+    .pesanan-card .pembeli { font-size: 13px; color: #555; margin-bottom: 6px; line-height: 1.4; }
+    .pesanan-card .pembeli strong { color: #333; }
+    .pesanan-item { display: flex; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
+    .pesanan-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+    .pesanan-item .mine { color: #28a745; font-size: 10px; font-weight: 600; }
+    .pesanan-total { font-size: 13px; font-weight: 600; color: #ee4d2d; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px; }
+
+    .text-kosong { text-align: center; padding: 40px 20px; color: #999; }
+    .text-kosong i { font-size: 40px; color: #ddd; }
+    .text-kosong p { margin-top: 10px; font-size: 14px; }
+
+    /* LOADING */
+    .loading-overlay {
+      position: fixed; inset: 0; background: white; z-index: 999;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+    }
+    .loading-overlay i { font-size: 36px; color: #ee4d2d; animation: spin 1s linear infinite; }
+    .loading-overlay p { margin-top: 12px; color: #888; font-size: 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: white; display: flex; border-top: 1px solid #eee; z-index: 99;
+    }
+    .bottom-nav a {
+      flex: 1; text-align: center; padding: 8px 0; color: #999; text-decoration: none; font-size: 11px;
+    }
+    .bottom-nav a i { font-size: 18px; display: block; margin-bottom: 2px; }
+    .bottom-nav a.active { color: #ee4d2d; }
+  </style>
+</head>
+<body>
+
+  <!-- LOADING (saat cek login) -->
+  <div class="loading-overlay" id="authLoading">
+    <i class="fas fa-spinner"></i>
+    <p>Memeriksa akses penjual...</p>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <a href="index.html"><i class="fas fa-arrow-left"></i></a>
+    <div style="flex:1;">
+      <h2>Dashboard Penjual</h2>
+      <div class="user-email" id="userEmail"></div>
+    </div>
+    <a href="#" class="btn-logout" id="btnLogout"><i class="fas fa-sign-out-alt"></i></a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <h3>Total Produk</h3>
+      <div class="value" id="statProduk">0</div>
+      <small>produk aktif</small>
+    </div>
+    <div class="stat-card">
+      <h3>Total Stok</h3>
+      <div class="value" id="statStok">0</div>
+      <small>unit tersedia</small>
+    </div>
+    <div class="stat-card">
+      <h3>Terjual</h3>
+      <div class="value" id="statTerjual">0</div>
+      <small>unit laku</small>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" data-tab="produk">
+      <i class="fas fa-box"></i>Produk Saya
+    </div>
+    <div class="tab" data-tab="tambah">
+      <i class="fas fa-plus-circle"></i>Tambah Produk
+    </div>
+    <div class="tab" data-tab="pesanan">
+      <i class="fas fa-shopping-bag"></i>Pesanan Masuk
+    </div>
+  </div>
+
+  <!-- TAB 1: PRODUK SAYA -->
+  <div class="tab-content active" id="tab-produk">
+    <div id="daftarProdukSaya">
+      <div class="text-kosong"><i class="fas fa-spinner"></i><p>Memuat produk...</p></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: TAMBAH / EDIT PRODUK -->
+  <div class="tab-content" id="tab-tambah">
+    <div class="form-card">
+      <h3 id="judulForm">Tambah Produk Baru</h3>
+
+      <div class="form-group">
+        <label>Nama Produk *</label>
+        <input type="text" id="namaProduk" placeholder="Contoh: Kaos Polos Premium">
+      </div>
+      <div class="form-group">
+        <label>Harga (Rp) *</label>
+        <input type="number" id="hargaProduk" placeholder="Contoh: 79000">
+      </div>
+      <div class="form-group">
+        <label>Diskon (%)</label>
+        <input type="number" id="diskonProduk" placeholder="Contoh: 40 (kosongkan jika tidak ada)">
+      </div>
+      <div class="form-group">
+        <label>Stok</label>
+        <input type="number" id="stokProduk" placeholder="Jumlah barang">
+      </div>
+      <div class="form-group">
+        <label>Foto Produk *</label>
+        <input type="file" id="fotoProduk" accept="image/*">
+        <small>Foto otomatis diperkecil (maks 600px)</small>
+        <img id="previewFoto" style="display:none;">
+        <small id="infoUkuran" style="color:#28a745;display:block;margin-top:4px;"></small>
+      </div>
+      <div class="form-group">
+        <label>Deskripsi Produk</label>
+        <textarea id="deskripsiProduk" rows="3" placeholder="Bahan, ukuran, kondisi, dll"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Kategori (pilih minimal satu) *</label>
+        <div class="kategori-grid" id="kategoriProduk">
+          <label><input type="checkbox" value="wanita"> Wanita</label>
+          <label><input type="checkbox" value="pria"> Pria</label>
+          <label><input type="checkbox" value="atasan"> Atasan</label>
+          <label><input type="checkbox" value="aksesoris"> Aksesoris</label>
+          <label><input type="checkbox" value="musimdingin"> Musim Dingin</label>
+          <label><input type="checkbox" value="promo"> Promo</label>
+          <label><input type="checkbox" value="terlaris"> Terlaris</label>
+          <label><input type="checkbox" value="terbaru"> Terbaru</label>
+          <label><input type="checkbox" value="diskon"> Diskon</label>
+        </div>
+      </div>
+
+      <button class="btn-simpan-form" id="btnSimpanProduk">
+        <i class="fas fa-save"></i> Simpan Produk
+      </button>
+      <button class="btn-reset-form" id="btnResetForm" style="display:none;">
+        <i class="fas fa-times"></i> Batal Edit
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB 3: PESANAN MASUK -->
+  <div class="tab-content" id="tab-pesanan">
+    <div id="daftarPesananMasuk">
+      <div class="text-kosong"><i class="fas fa-spinner"></i><p>Memuat pesanan...</p></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="index.html"><i class="fas fa-home"></i><span>Beranda</span></a>
+    <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
+    <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
+    <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
+  </nav>
+
+  <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
+  <script>
+    let fotoBase64 = "";
+    function kompresGambar(file, maxLebar = 600, kualitas = 0.5) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) {
+          return reject(new Error('Bukan file gambar!'));
+        }
+        const pembaca = new FileReader();
+        pembaca.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            let lebar = img.width;
+            let tinggi = img.height;
+            if (lebar > maxLebar) {
+              const rasio = maxLebar / lebar;
+              lebar = maxLebar;
+              tinggi = Math.round(img.height * rasio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = lebar;
+            canvas.height = tinggi;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, lebar, tinggi);
+            const base64 = canvas.toDataURL('image/jpeg', kualitas);
+            const ukuranAsli = (file.size / 1024).toFixed(1);
+            const ukuranBaru = Math.round((base64.length * 0.75) / 1024);
+            resolve({ base64, ukuranAsli, ukuranBaru });
+          };
+          img.onerror = () => reject(new Error('Gagal muat gambar'));
+          img.src = e.target.result;
+        };
+        pembaca.readAsDataURL(file);
+      });
+    }
+
+    // TAB SWITCHING
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+    function switchTab(nama) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === nama));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + nama));
+    }
+  </script>
+
+  <!-- SCRIPT UTAMA (module) -->
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { ref, push, set, update, remove, onValue, get }
+      from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { lindungiHalaman, logout } from './auth/auth-guard.js';
+
+    let infoUser = null;
+    let modeForm = 'tambah';   // 'tambah' | 'edit'
+    let idProdukEdit = null;
+
+    // === GATE: hanya penjual yang boleh akses ===
+    lindungiHalaman(['penjual']).then(info => {
+      if (!info) return;
+      infoUser = info;
+      document.getElementById('authLoading').style.display = 'none';
+      document.getElementById('userEmail').textContent = info.email || '';
+      muatProdukSaya();
+      muatPesananMasuk();
+      pasangFormHandler();
+    });
+
+    // === LOGOUT ===
+    document.getElementById('btnLogout').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (confirm('Yakin ingin keluar dari akun penjual ini?')) logout();
+    });
+
+    // =====================================================
+    //  MUAT PRODUK SAYA (filter uidPenjual === uid saya)
+    // =====================================================
+    function muatProdukSaya() {
+      const wadah = document.getElementById('daftarProdukSaya');
+      const produkRef = ref(db, 'produk');
+
+      onValue(produkRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+          wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-box-open"></i><p>Belum ada produk.<br>Klik tab "Tambah Produk" untuk mulai jualan.</p></div>`;
+          updateStats(0, 0, 0);
+          return;
+        }
+
+        // Filter hanya produk milik penjual yang login
+        const milikSaya = Object.entries(data)
+          .map(([id, val]) => ({ id, ...val }))
+          .filter(p => p.uidPenjual === infoUser.uid);
+
+        if (milikSaya.length === 0) {
+          wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-box-open"></i><p>Belum ada produk.<br>Klik tab "Tambah Produk" untuk mulai jualan.</p></div>`;
+          updateStats(0, 0, 0);
+          return;
+        }
+
+        // Hitung statistik
+        const totalStok = milikSaya.reduce((s, p) => s + (Number(p.stok) || 0), 0);
+        const totalTerjual = milikSaya.reduce((s, p) => s + (Number(p.terjual) || 0), 0);
+        updateStats(milikSaya.length, totalStok, totalTerjual);
+
+        // Render daftar
+        wadah.innerHTML = milikSaya.map(p => {
+          const foto = p.foto || 'https://picsum.photos/id/21/100/100';
+          const harga = Number(p.harga || 0).toLocaleString('id-ID');
+          const stok = Number(p.stok || 0);
+          const terjual = Number(p.terjual || 0);
+          return `
+            <div class="produk-row">
+              <img src="${foto}" alt="${escapeAttr(p.nama)}" onerror="this.src='https://picsum.photos/id/21/100/100'">
+              <div class="produk-info">
+                <div class="nama">${escapeHtml(p.nama || '(Tanpa nama)')}</div>
+                <div class="harga">Rp ${harga}</div>
+                <div class="meta">Stok: ${stok} • Terjual: ${terjual}</div>
+              </div>
+              <div class="produk-aksi">
+                <button class="btn-aksi edit" data-id="${p.id}"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-aksi hapus" data-id="${p.id}"><i class="fas fa-trash"></i> Hapus</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Pasang handler tombol Edit & Hapus
+        wadah.querySelectorAll('.btn-aksi.edit').forEach(btn => {
+          btn.addEventListener('click', () => editProduk(btn.dataset.id));
+        });
+        wadah.querySelectorAll('.btn-aksi.hapus').forEach(btn => {
+          btn.addEventListener('click', () => hapusProduk(btn.dataset.id));
+        });
+      }, (err) => {
+        console.error('Gagal muat produk:', err);
+        wadah.innerHTML = `<div class="text-kosong" style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i><p>Gagal memuat produk: ${escapeHtml(err.message)}</p></div>`;
+      });
+    }
+
+    function updateStats(jumlah, stok, terjual) {
+      document.getElementById('statProduk').textContent = jumlah;
+      document.getElementById('statStok').textContent = stok;
+      document.getElementById('statTerjual').textContent = terjual;
+    }
+
+    // =====================================================
+    //  EDIT PRODUK (isi form dengan data lama)
+    // =====================================================
+    async function editProduk(id) {
+      try {
+        const snap = await get(ref(db, 'produk/' + id));
+        if (!snap.exists()) {
+          alert('Produk tidak ditemukan.');
+          return;
+        }
+        const p = snap.val();
+
+        // Isi form
+        document.getElementById('namaProduk').value = p.nama || '';
+        document.getElementById('hargaProduk').value = p.harga || '';
+        document.getElementById('diskonProduk').value = p.diskon || '';
+        document.getElementById('stokProduk').value = p.stok || '';
+        document.getElementById('deskripsiProduk').value = p.deskripsi || '';
+
+        // Centang kategori yang sudah dipilih
+        document.querySelectorAll('#kategoriProduk input[type="checkbox"]').forEach(cb => {
+          const k = Array.isArray(p.kategori) ? p.kategori : (p.kategori ? [p.kategori] : []);
+          cb.checked = k.includes(cb.value);
+        });
+
+        // Tampilkan foto lama sebagai preview
+        if (p.foto) {
+          fotoBase64 = p.foto;
+          const prev = document.getElementById('previewFoto');
+          prev.src = p.foto;
+          prev.style.display = 'block';
+          document.getElementById('infoUkuran').innerText = 'Foto lama (ubah hanya kalau pilih file baru)';
+        } else {
+          fotoBase64 = '';
+        }
+
+        // Ubah mode ke edit
+        modeForm = 'edit';
+        idProdukEdit = id;
+        document.getElementById('judulForm').innerText = 'Edit Produk';
+        document.getElementById('btnSimpanProduk').innerHTML = '<i class="fas fa-save"></i> Update Produk';
+        document.getElementById('btnResetForm').style.display = 'block';
+
+        // Pindah ke tab Tambah
+        switchTab('tambah');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        alert('Gagal memuat data produk: ' + err.message);
+      }
+    }
+
+    // =====================================================
+    //  HAPUS PRODUK
+    // =====================================================
+    async function hapusProduk(id) {
+      if (!confirm('Yakin ingin menghapus produk ini? Produk akan hilang dari beranda pembeli.')) return;
+      try {
+        await remove(ref(db, 'produk/' + id));
+        alert('✅ Produk berhasil dihapus.');
+        // Kalau sedang edit produk yang dihapus, reset form
+        if (idProdukEdit === id) resetForm();
+      } catch (err) {
+        alert('❌ Gagal hapus: ' + err.message);
+      }
+    }
+
+    // =====================================================
+    //  FORM HANDLER (TAMBAH / UPDATE)
+    // =====================================================
+    function pasangFormHandler() {
+      const inputFoto = document.getElementById('fotoProduk');
+      const previewFoto = document.getElementById('previewFoto');
+      const infoUkuran = document.getElementById('infoUkuran');
+
+      // Preview + kompres foto saat file dipilih
+      inputFoto.addEventListener('change', async () => {
+        const file = inputFoto.files[0];
+        if (!file) {
+          previewFoto.style.display = 'none';
+          return;
+        }
+        try {
+          const hasil = await kompresGambar(file);
+          fotoBase64 = hasil.base64;
+          previewFoto.src = fotoBase64;
+          previewFoto.style.display = 'block';
+          infoUkuran.innerText = `✅ ${hasil.ukuranAsli}KB → ${hasil.ukuranBaru}KB`;
+        } catch (err) {
+          alert('Error kompres gambar: ' + err.message);
+        }
+      });
+
+      // Tombol Simpan / Update
+      document.getElementById('btnSimpanProduk').addEventListener('click', async () => {
+        const nama = document.getElementById('namaProduk').value.trim();
+        const harga = Number(document.getElementById('hargaProduk').value);
+        const diskon = Number(document.getElementById('diskonProduk').value) || 0;
+        const stok = Number(document.getElementById('stokProduk').value) || 0;
+        const deskripsi = document.getElementById('deskripsiProduk').value.trim();
+        const kategoriDipilih = Array.from(
+          document.querySelectorAll('#kategoriProduk input[type="checkbox"]:checked')
+        ).map(cb => cb.value);
+
+        // Validasi
+        if (!nama || !harga) {
+          alert('❌ Nama dan Harga wajib diisi.');
+          return;
+        }
+        if (kategoriDipilih.length === 0) {
+          alert('❌ Pilih minimal satu kategori.');
+          return;
+        }
+        // Foto wajib untuk produk baru; untuk edit, boleh pakai foto lama
+        if (modeForm === 'tambah' && !fotoBase64) {
+          alert('❌ Pilih foto produk.');
+          return;
+        }
+        if (fotoBase64 && fotoBase64.length > 300000) {
+          alert('⚠️ Foto terlalu besar meski sudah dikompres. Pilih foto yang lebih kecil.');
+          return;
+        }
+
+        const btn = document.getElementById('btnSimpanProduk');
+        btn.disabled = true;
+        const teksAwal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner"></i> Menyimpan...';
+
+        try {
+          const dataProduk = {
+            nama, harga,
+            hargaAsli: Math.round(harga * 100 / (100 - diskon)) || harga,
+            diskon, stok, foto: fotoBase64, deskripsi,
+            kategori: kategoriDipilih,
+            uidPenjual: infoUser.uid,
+            emailPenjual: infoUser.email
+          };
+
+          if (modeForm === 'tambah') {
+            const produkRef = push(ref(db, 'produk'));
+            await set(produkRef, {
+              id: produkRef.key,
+              ...dataProduk,
+              terjual: 0,
+              dibuatPada: Date.now()
+            });
+            alert('✅ Produk baru berhasil disimpan & muncul di beranda pembeli!');
+          } else {
+            // Update produk yang sudah ada (jangan timpa terjual & dibuatPada)
+            await update(ref(db, 'produk/' + idProdukEdit), dataProduk);
+            alert('✅ Produk berhasil diperbarui!');
+          }
+
+          resetForm();
+          switchTab('produk');
+        } catch (err) {
+          alert('❌ Gagal menyimpan: ' + err.message);
+          console.error(err);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = teksAwal;
+        }
+      });
+
+      // Tombol Batal Edit
+      document.getElementById('btnResetForm').addEventListener('click', () => {
+        resetForm();
+        switchTab('produk');
+      });
+    }
+
+    function resetForm() {
+      document.getElementById('namaProduk').value = '';
+      document.getElementById('hargaProduk').value = '';
+      document.getElementById('diskonProduk').value = '';
+      document.getElementById('stokProduk').value = '';
+      document.getElementById('deskripsiProduk').value = '';
+      document.getElementById('fotoProduk').value = '';
+      document.getElementById('previewFoto').style.display = 'none';
+      document.getElementById('infoUkuran').innerText = '';
+      document.querySelectorAll('#kategoriProduk input[type="checkbox"]').forEach(cb => cb.checked = false);
+      fotoBase64 = '';
+      modeForm = 'tambah';
+      idProdukEdit = null;
+      document.getElementById('judulForm').innerText = 'Tambah Produk Baru';
+      document.getElementById('btnSimpanProduk').innerHTML = '<i class="fas fa-save"></i> Simpan Produk';
+      document.getElementById('btnResetForm').style.display = 'none';
+    }
+
+    // =====================================================
+    //  PESANAN MASUK (order yang mengandung produk saya)
+    // =====================================================
+    function muatPesananMasuk() {
+      const wadah = document.getElementById('daftarPesananMasuk');
+      const pesananRef = ref(db, 'pesanan');
+
+      onValue(pesananRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+          wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-inbox"></i><p>Belum ada pesanan masuk.</p></div>`;
+          return;
+        }
+
+        const semua = Object.entries(data)
+          .map(([id, val]) => ({ id, ...val }))
+          .reverse();
+
+        // Filter: pesanan yang minimal 1 item adalah produk saya
+        const pesananSaya = semua.filter(pesan => {
+          const items = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang || {});
+          return items.some(brg => brg.uidPenjual === infoUser.uid);
+        });
+
+        if (pesananSaya.length === 0) {
+          wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-inbox"></i><p>Belum ada pesanan untuk produk Anda.<br>Pesanan akan muncul di sini saat pembeli membeli produk Anda.</p></div>`;
+          return;
+        }
+
+        wadah.innerHTML = pesananSaya.map(pesan => {
+          const items = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang || {});
+          const status = pesan.status || 'Menunggu Diproses';
+          let kelasStatus = 'menunggu';
+          if (status === 'Sedang Dikirim') kelasStatus = 'dikirim';
+          if (status === 'Selesai') kelasStatus = 'selesai';
+
+          const htmlItem = items.map(brg => {
+            const mine = brg.uidPenjual === infoUser.uid;
+            return `
+              <div class="pesanan-item">
+                <img src="${brg.foto || 'https://picsum.photos/id/21/100/100'}" alt="">
+                <div style="flex:1;min-width:0;">
+                  <div style="word-break:break-word;">${escapeHtml(brg.nama || '')}</div>
+                  <div style="color:#888;">Qty: ${brg.jumlah || 1} • Rp ${Number(brg.harga || 0).toLocaleString('id-ID')}</div>
+                  ${mine ? '<span class="mine">✓ Produk Anda</span>' : '<span style="font-size:10px;color:#aaa;">Produk penjual lain</span>'}
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="pesanan-card">
+              <span class="status ${kelasStatus}">${escapeHtml(status)}</span>
+              <div class="tanggal">${escapeHtml(pesan.tanggal || '-')}</div>
+              <div class="pembeli">
+                <strong>Pembeli:</strong> ${escapeHtml(pesan.namaPenerima || '-')}<br>
+                <strong>HP:</strong> ${escapeHtml(pesan.noHp || '-')}<br>
+                <strong>Alamat:</strong> ${escapeHtml(pesan.alamat || '-')}
+              </div>
+              ${htmlItem}
+              <div class="pesanan-total">Total Pesanan: Rp ${Number(pesan.totalBayar || 0).toLocaleString('id-ID')}</div>
+            </div>
+          `;
+        }).join('');
+      }, (err) => {
+        console.error('Gagal muat pesanan:', err);
+        wadah.innerHTML = `<div class="text-kosong" style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i><p>Gagal memuat pesanan: ${escapeHtml(err.message)}</p></div>`;
+      });
+    }
+
+    // === HELPER ESCAPE ===
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+    function escapeAttr(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html> 
