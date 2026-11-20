@@ -133,7 +133,7 @@ function redirectByRole(role) {
   if (role === 'admin') {
     window.location.href = '../admin.html';
   } else if (role === 'penjual') {
-    window.location.href = '../index.html';
+    window.location.href = '../seller.html';
   } else if (role === 'pembeli') {
     window.location.href = '../index.html';
   } else {
