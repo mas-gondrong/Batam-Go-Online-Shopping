@@ -77,6 +77,13 @@
       color: #333;
       border-bottom: 1px solid #f0f0f0;
       font-size: 15px;
+      cursor: pointer;
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      width: 100%;
+      text-align: left;
     }
     .menu-item:last-child { border-bottom: none; }
     .menu-item i { width: 24px; color: #ee4d2d; margin-right: 14px; font-size: 16px; }
@@ -99,6 +106,48 @@
       text-align: center;
     }
     .btn-logout:active { background: #fff5f5; }
+
+    /* FORM EDIT / ALAMAT */
+    .form-card {
+      background: white;
+      margin: 15px;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .form-card h3 { font-size: 17px; margin-bottom: 6px; color: #333; }
+    .form-card .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+    .form-field { margin-bottom: 14px; }
+    .form-field label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 600; }
+    .form-field input, .form-field textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px;
+      font-size: 14px; outline: none; font-family: Arial, sans-serif;
+    }
+    .form-field input:focus, .form-field textarea:focus { border-color: #ee4d2d; }
+    .form-field input:read-only { background: #f9f9f9; color: #888; }
+    .form-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-simpan {
+      flex: 1; background: #ee4d2d; color: white; border: none;
+      padding: 12px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .btn-simpan:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-batal {
+      flex: 1; background: white; color: #666; border: 1px solid #ddd;
+      padding: 12px; border-radius: 8px; font-size: 15px; cursor: pointer;
+    }
+
+    /* ALAMAT TERSIMPAN (tampil di menu utama) */
+    .alamat-tersimpan {
+      background: #fff8f5;
+      border: 1px solid #ffe0d2;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 12px 15px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .alamat-tersimpan strong { color: #ee4d2d; }
 
     /* LOADING */
     .loading-state { text-align: center; padding: 60px 20px; color: #888; }
@@ -134,10 +183,10 @@
   <!-- HEADER -->
   <div class="header-akun">
     <a href="index.html"><i class="fas fa-arrow-left"></i></a>
-    <h3>Akun Saya</h3>
+    <h3 id="judulHalaman">Akun Saya</h3>
   </div>
 
-  <!-- KONTEN (diisi JS setelah cek login) -->
+  <!-- KONTEN (diisi JS) -->
   <div id="kontenProfil">
     <div class="loading-state">
       <i class="fas fa-spinner"></i>
@@ -165,89 +214,98 @@
   <script type="module" src="firebase-config.js"></script>
   <script type="module">
     import { auth, db } from './firebase-config.js';
-    import { ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
     import { cekLoginSaatIni, logout } from './auth/auth-guard.js';
 
     const konten = document.getElementById('kontenProfil');
+    const judul  = document.getElementById('judulHalaman');
 
-    // GATE: wajib login. Kalau sudah login, tampilkan profil.
+    let infoUser = null;   // { uid, email, role }
+    let dataUser = {};     // { nama, foto, alamatPengiriman, ... }
+
+    // GATE: wajib login. Kalau sudah login, muat data & tampilkan profil.
     cekLoginSaatIni().then(async (info) => {
       if (!info) {
-        // Belum login → arahkan ke halaman login
         window.location.href = 'auth/login.html';
         return;
       }
+      infoUser = info;
+      await muatDataUser();
+      renderProfilView();
+    });
 
-      // Baca data lengkap user dari database (untuk dapat nama, role, foto)
-      let nama = info.email || 'Pengguna';
-      let foto = '';
+    // Baca data lengkap user dari database
+    async function muatDataUser() {
       try {
-        const snap = await get(ref(db, 'users/' + info.uid));
-        if (snap.exists()) {
-          const data = snap.val();
-          if (data.nama) nama = data.nama;
-          if (data.foto) foto = data.foto;
-        }
+        const snap = await get(ref(db, 'users/' + infoUser.uid));
+        if (snap.exists()) dataUser = snap.val();
       } catch (err) {
         console.error('Gagal baca data user:', err);
       }
+    }
 
-      // Inisial avatar dari nama
+    // ============ VIEW 1: PROFIL + MENU UTAMA ============
+    function renderProfilView() {
+      judul.innerText = 'Akun Saya';
+      const nama  = dataUser.nama || infoUser.email || 'Pengguna';
+      const foto  = dataUser.foto || '';
       const inisial = (nama || '?').charAt(0).toUpperCase();
+      const role  = infoUser.role || 'pembeli';
 
-      // Label role
-      const roleLabel = {
-        admin: 'Administrator',
-        penjual: 'Penjual',
-        pembeli: 'Pembeli'
-      };
-      const role = info.role || 'pembeli';
+      const roleLabel = { admin: 'Administrator', penjual: 'Penjual', pembeli: 'Pembeli' };
+      const roleColor = { admin: '#dc3545', penjual: '#6f42c1', pembeli: '#28a745' };
 
-      // Menu berbeda per role
-      let menuHTML = `
-        <a href="riwayat.html" class="menu-item">
-          <i class="fas fa-shopping-bag"></i> Riwayat Pesanan
-          <i class="fas fa-chevron-right arrow"></i>
-        </a>
-      `;
+      // Tampilkan alamat tersimpan kalau ada
+      let htmlAlamat = '';
+      if (dataUser.alamatPengiriman && dataUser.alamatPengiriman.alamat) {
+        const a = dataUser.alamatPengiriman;
+        htmlAlamat = `
+          <div class="alamat-tersimpan">
+            <strong><i class="fas fa-map-marker-alt"></i> Alamat Pengiriman Tersimpan:</strong><br>
+            ${a.namaPenerima || '-'} &bull; ${a.noHp || '-'}<br>
+            ${a.alamat || '-'}
+          </div>
+        `;
+      }
+
+      // Menu khusus role
+      let menuRole = '';
       if (role === 'penjual') {
-        menuHTML += `
-          <a href="admin.html" class="menu-item">
-            <i class="fas fa-store"></i> Kelola Produk Saya
-            <i class="fas fa-chevron-right arrow"></i>
-          </a>
-        `;
-      }
-      if (role === 'admin') {
-        menuHTML += `
-          <a href="admin.html" class="menu-item">
-            <i class="fas fa-cog"></i> Panel Admin
-            <i class="fas fa-chevron-right arrow"></i>
-          </a>
-        `;
-      }
-      menuHTML += `
-        <a href="#" class="menu-item" onclick="alert('Fitur ini akan segera hadir'); return false;">
-          <i class="fas fa-map-marker-alt"></i> Alamat Pengiriman
+        menuRole = `<button class="menu-item" onclick="window.location.href='admin.html'">
+          <i class="fas fa-store"></i> Kelola Produk Saya
           <i class="fas fa-chevron-right arrow"></i>
-        </a>
-        <a href="#" class="menu-item" onclick="alert('Fitur ini akan segera hadir'); return false;">
-          <i class="fas fa-user-edit"></i> Edit Profil
+        </button>`;
+      } else if (role === 'admin') {
+        menuRole = `<button class="menu-item" onclick="window.location.href='admin.html'">
+          <i class="fas fa-cog"></i> Panel Admin
           <i class="fas fa-chevron-right arrow"></i>
-        </a>
-      `;
+        </button>`;
+      }
 
-      // Render halaman
       konten.innerHTML = `
         <div class="profil-card">
           <div class="avatar">${foto ? `<img src="${foto}" alt="${nama}">` : inisial}</div>
           <div class="profil-nama">${nama}</div>
-          <div class="profil-email">${info.email || ''}</div>
+          <div class="profil-email">${infoUser.email || ''}</div>
           <span class="role-badge ${role}">${roleLabel[role] || 'Pengguna'}</span>
         </div>
 
+        ${htmlAlamat}
+
         <div class="menu-list">
-          ${menuHTML}
+          <button class="menu-item" onclick="window.location.href='riwayat.html'">
+            <i class="fas fa-shopping-bag"></i> Riwayat Pesanan
+            <i class="fas fa-chevron-right arrow"></i>
+          </button>
+          ${menuRole}
+          <button class="menu-item" id="btnEditProfil">
+            <i class="fas fa-user-edit"></i> Edit Profil
+            <i class="fas fa-chevron-right arrow"></i>
+          </button>
+          <button class="menu-item" id="btnAlamat">
+            <i class="fas fa-map-marker-alt"></i> Alamat Pengiriman
+            <i class="fas fa-chevron-right arrow"></i>
+          </button>
         </div>
 
         <button class="btn-logout" id="btnLogout">
@@ -255,16 +313,140 @@
         </button>
       `;
 
-      // Handler tombol logout
-      const btnLogout = document.getElementById('btnLogout');
-      if (btnLogout) {
-        btnLogout.addEventListener('click', () => {
-          if (confirm('Yakin ingin keluar dari akun ini?')) {
-            logout();
-          }
-        });
+      // Handler tombol
+      document.getElementById('btnEditProfil').addEventListener('click', renderEditProfilForm);
+      document.getElementById('btnAlamat').addEventListener('click', renderAlamatForm);
+      document.getElementById('btnLogout').addEventListener('click', () => {
+        if (confirm('Yakin ingin keluar dari akun ini?')) logout();
+      });
+    }
+
+    // ============ VIEW 2: FORM EDIT PROFIL ============
+    function renderEditProfilForm() {
+      judul.innerText = 'Edit Profil';
+      const namaSekarang = dataUser.nama || '';
+
+      konten.innerHTML = `
+        <div class="form-card">
+          <h3>Edit Profil</h3>
+          <p class="sub">Ubah nama tampilan kamu. Email tidak bisa diubah karena terkait akun login.</p>
+
+          <div class="form-field">
+            <label for="inputNama">Nama Lengkap</label>
+            <input type="text" id="inputNama" value="${escapeHtml(namaSekarang)}" placeholder="Nama kamu" autocomplete="name">
+          </div>
+
+          <div class="form-field">
+            <label for="inputEmail">Email (tidak bisa diubah)</label>
+            <input type="email" id="inputEmail" value="${escapeHtml(infoUser.email || '')}" readonly>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-batal" id="btnBatalEdit">Batal</button>
+            <button class="btn-simpan" id="btnSimpanProfil">Simpan</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnBatalEdit').addEventListener('click', renderProfilView);
+      document.getElementById('btnSimpanProfil').addEventListener('click', simpanProfil);
+    }
+
+    // ============ VIEW 3: FORM ALAMAT PENGIRIMAN ============
+    function renderAlamatForm() {
+      judul.innerText = 'Alamat Pengiriman';
+      const a = dataUser.alamatPengiriman || {};
+
+      konten.innerHTML = `
+        <div class="form-card">
+          <h3>Alamat Pengiriman</h3>
+          <p class="sub">Alamat ini akan otomatis terisi saat checkout, jadi tidak perlu ketik ulang tiap belanja.</p>
+
+          <div class="form-field">
+            <label for="inputNamaPenerima">Nama Penerima</label>
+            <input type="text" id="inputNamaPenerima" value="${escapeHtml(a.namaPenerima || '')}" placeholder="Nama orang yang menerima paket">
+          </div>
+
+          <div class="form-field">
+            <label for="inputNoHp">Nomor HP</label>
+            <input type="tel" id="inputNoHp" value="${escapeHtml(a.noHp || '')}" placeholder="08xxxxxxxxxx" autocomplete="tel">
+          </div>
+
+          <div class="form-field">
+            <label for="inputAlamat">Alamat Lengkap</label>
+            <textarea id="inputAlamat" rows="3" placeholder="Jalan, RT RW, Kelurahan, Kota, Kode Pos">${escapeHtml(a.alamat || '')}</textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-batal" id="btnBatalAlamat">Batal</button>
+            <button class="btn-simpan" id="btnSimpanAlamat">Simpan Alamat</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('btnBatalAlamat').addEventListener('click', renderProfilView);
+      document.getElementById('btnSimpanAlamat').addEventListener('click', simpanAlamat);
+    }
+
+    // ============ SIMPAN PROFIL ============
+    async function simpanProfil() {
+      const namaBaru = document.getElementById('inputNama').value.trim();
+      const btn = document.getElementById('btnSimpanProfil');
+
+      if (!namaBaru) {
+        alert('❌ Nama tidak boleh kosong.');
+        return;
       }
-    });
+
+      btn.disabled = true;
+      btn.innerText = 'Menyimpan...';
+      try {
+        await update(ref(db, 'users/' + infoUser.uid), { nama: namaBaru });
+        dataUser.nama = namaBaru;
+        alert('✅ Profil berhasil diperbarui!');
+        renderProfilView();
+      } catch (err) {
+        alert('❌ Gagal menyimpan: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = 'Simpan';
+      }
+    }
+
+    // ============ SIMPAN ALAMAT ============
+    async function simpanAlamat() {
+      const namaPenerima = document.getElementById('inputNamaPenerima').value.trim();
+      const noHp         = document.getElementById('inputNoHp').value.trim();
+      const alamat       = document.getElementById('inputAlamat').value.trim();
+      const btn = document.getElementById('btnSimpanAlamat');
+
+      if (!namaPenerima || !noHp || !alamat) {
+        alert('❌ Semua field alamat wajib diisi.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = 'Menyimpan...';
+      try {
+        const alamatPengiriman = { namaPenerima, noHp, alamat };
+        await update(ref(db, 'users/' + infoUser.uid), { alamatPengiriman });
+        dataUser.alamatPengiriman = alamatPengiriman;
+        alert('✅ Alamat pengiriman tersimpan!');
+        renderProfilView();
+      } catch (err) {
+        alert('❌ Gagal menyimpan alamat: ' + err.message);
+        btn.disabled = false;
+        btn.innerText = 'Simpan Alamat';
+      }
+    }
+
+    // Helper: escape karakter khusus supaya tidak pecah di HTML
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
   </script>
 </body>
 </html> 
