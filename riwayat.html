@@ -52,6 +52,9 @@
     .status.menunggu {
       background:#f59e0b;
     }
+    .status.siapdikirim {
+      background:#0d9488;
+    }
     .status.dikirim {
       background:#3b82f6;
     }
@@ -154,6 +157,7 @@
 
       kontenRiwayat.innerHTML = listPesanan.map((pesan, idx) => {
   let kelasStatus = "menunggu";
+  if (pesan.status === "Siap Dikirim") kelasStatus = "siapdikirim";
   if (pesan.status === "Sedang Dikirim") kelasStatus = "dikirim";
   if (pesan.status === "Selesai")        kelasStatus = "selesai";
 
