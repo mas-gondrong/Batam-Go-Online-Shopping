@@ -138,6 +138,7 @@
       display: inline-block; padding: 4px 10px; border-radius: 4px; color: white; font-size: 11px; font-weight: 600; margin-bottom: 8px;
     }
     .status.menunggu { background: #f59e0b; }
+    .status.siapdikirim { background: #0d9488; }
     .status.dikirim { background: #3b82f6; }
     .status.selesai { background: #22c55e; }
     .pesanan-card .tanggal { font-size: 11px; color: #999; margin-bottom: 8px; }
@@ -636,6 +637,24 @@
     }
 
     // =====================================================
+    //  TANDAI PESANAN SIAP DIKIRIM (penjual → admin)
+    //  Update status jadi "Siap Dikirim" + catat timestamp.
+    //  Admin & pembeli auto-update via onValue (real-time).
+    // =====================================================
+    async function tandaiSiapDikirim(idPesanan) {
+      if (!confirm('Tandai pesanan ini "Siap Dikirim"?\n\nAdmin akan melihat pesanan siap diproses pengiriman.')) return;
+      try {
+        await update(ref(db, 'pesanan/' + idPesanan), {
+          status: 'Siap Dikirim',
+          siapDikirimPada: Date.now()
+        });
+        alert('✅ Pesanan ditandai "Siap Dikirim".\nAdmin telah diberi tahu (real-time).');
+      } catch (err) {
+        alert('❌ Gagal menandai: ' + err.message);
+      }
+    }
+
+    // =====================================================
     //  PESANAN MASUK (order yang mengandung produk saya)
     // =====================================================
     function muatPesananMasuk() {
@@ -668,6 +687,7 @@
           const items = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang || {});
           const status = pesan.status || 'Menunggu Diproses';
           let kelasStatus = 'menunggu';
+          if (status === 'Siap Dikirim') kelasStatus = 'siapdikirim';
           if (status === 'Sedang Dikirim') kelasStatus = 'dikirim';
           if (status === 'Selesai') kelasStatus = 'selesai';
 
@@ -692,10 +712,29 @@
             htmlDiterima = `<div style="font-size:12px;color:#28a745;margin:6px 0;padding:6px 8px;background:#eafaf1;border-radius:5px;"><i class="fas fa-check-circle"></i> Diterima pembeli: ${tglDiterima}</div>`;
           }
 
+          // Info "Siap dikirim" kalau penjual sudah tandai (timestamp, sync ke admin)
+          let htmlSiapDikirim = '';
+          if (pesan.siapDikirimPada) {
+            const tglSiap = new Date(pesan.siapDikirimPada).toLocaleString('id-ID');
+            htmlSiapDikirim = `<div style="font-size:12px;color:#0d9488;margin:6px 0;padding:6px 8px;background:#e6fffa;border-radius:5px;"><i class="fas fa-box"></i> Ditandai siap dikirim: ${tglSiap}</div>`;
+          }
+
+          // Tombol "Tandai Siap Dikirim" muncul HANYA saat status Menunggu Diproses
+          let htmlAksiSiapDikirim = '';
+          if (status === 'Menunggu Diproses') {
+            htmlAksiSiapDikirim = `
+              <button class="btn-siap-dikirim" data-id="${pesan.id}"
+                style="display:block;width:100%;margin-top:10px;padding:11px;background:#0d9488;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
+                <i class="fas fa-box-open"></i> Tandai Pesanan Siap Dikirim
+              </button>
+            `;
+          }
+
           return `
             <div class="pesanan-card">
               <span class="status ${kelasStatus}">${escapeHtml(status)}</span>
               <div class="tanggal">${escapeHtml(pesan.tanggal || '-')}</div>
+              ${htmlSiapDikirim}
               ${htmlDiterima}
               <div class="pembeli">
                 <strong>Pembeli:</strong> ${escapeHtml(pesan.namaPenerima || '-')}<br>
@@ -704,9 +743,15 @@
               </div>
               ${htmlItem}
               <div class="pesanan-total">Total Pesanan: Rp ${Number(pesan.totalBayar || 0).toLocaleString('id-ID')}</div>
+              ${htmlAksiSiapDikirim}
             </div>
           `;
         }).join('');
+
+        // Pasang handler tombol "Tandai Siap Dikirim"
+        wadah.querySelectorAll('.btn-siap-dikirim').forEach(btn => {
+          btn.addEventListener('click', () => tandaiSiapDikirim(btn.dataset.id));
+        });
       }, (err) => {
         console.error('Gagal muat pesanan:', err);
         wadah.innerHTML = `<div class="text-kosong" style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i><p>Gagal memuat pesanan: ${escapeHtml(err.message)}</p></div>`;
