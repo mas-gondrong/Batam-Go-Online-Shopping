@@ -219,7 +219,8 @@ if(!idProduk){
           nama: item.nama,
           harga: Number(item.harga),
           foto: item.foto,
-          jumlah: 1
+          uidPenjual: item.uidPenjual || null,
+          jumlah: 1
         })
       }
 
@@ -252,6 +253,7 @@ if(!idProduk){
           nama: item.nama,
           harga: Number(item.harga),
           foto: item.foto,
+          uidPenjual: item.uidPenjual || null,
           jumlah: 1
         });
       }
