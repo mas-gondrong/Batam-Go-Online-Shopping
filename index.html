@@ -178,9 +178,13 @@ function tutupAkun() {
     const roleColor = { admin: '#dc3545', penjual: '#6f42c1', pembeli: '#28a745' };
 
     let menuTambahan = '';
-    if (role === 'penjual' || role === 'admin') {
+    if (role === 'admin') {
       menuTambahan += `
-        <li><a href="admin.html"><i class="fas fa-cog"></i> ${role === 'admin' ? 'Panel Admin' : 'Kelola Produk'}</a></li>
+        <li><a href="admin.html"><i class="fas fa-cog"></i> Panel Admin</a></li>
+      `;
+    } else if (role === 'penjual') {
+      menuTambahan += `
+        <li><a href="seller.html"><i class="fas fa-store"></i> Kelola Produk</a></li>
       `;
     }
 
