@@ -8,6 +8,11 @@
   
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="TokoBaju">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
+  <link rel="icon" type="image/png" href="icon-192x192.png">
   
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -367,5 +372,123 @@ function updateBadgeKeranjang(){
 // Jalankan saat halaman beranda dibuka
 window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
   </script>
+
+  <!-- ============ TOMBOL INSTALL PWA MENGAMBANG ============ -->
+  <style>
+    #installBanner {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: white;
+      border-radius: 50px;
+      box-shadow: 0 8px 30px rgba(238,77,45,0.45), 0 2px 8px rgba(0,0,0,0.25);
+      padding: 6px 6px 6px 18px;
+      border: 2px solid #ee4d2d;
+      animation: pulseInstall 2.2s ease-in-out infinite;
+    }
+    #installBanner.show { display: flex; }
+    #btnInstallPwa {
+      background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: #ee4d2d;
+      padding: 8px 4px; font-family: Arial, sans-serif;
+    }
+    #btnInstallPwa i { font-size: 18px; }
+    #btnTutupInstall {
+      background: #f5f5f5; border: none; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%;
+      font-size: 18px; color: #888; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #btnTutupInstall:active { background: #eee; }
+    @keyframes pulseInstall {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50%      { transform: translate(-50%, -50%) scale(1.06); }
+    }
+    @media (max-width: 380px) {
+      #btnInstallPwa span { font-size: 13px; }
+      #installBanner { padding: 5px 5px 5px 14px; }
+    }
+  </style>
+
+  <div id="installBanner">
+    <button id="btnInstallPwa" aria-label="Install aplikasi">
+      <i class="fas fa-download"></i><span>Install Aplikasi</span>
+    </button>
+    <button id="btnTutupInstall" aria-label="Tutup">&times;</button>
+  </div>
+
+  <script>
+  (function () {
+    // === REGISTER SERVICE WORKER (syarat utama PWA bisa di-install) ===
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js')
+          .then(function (reg) { console.log('✅ SW terdaftar, scope:', reg.scope); })
+          .catch(function (err) { console.warn('⚠️ SW gagal daftar:', err); });
+      });
+    }
+
+    // === LOGIKA TOMBOL INSTALL ===
+    var banner     = document.getElementById('installBanner');
+    var btnInstall = document.getElementById('btnInstallPwa');
+    var btnTutup   = document.getElementById('btnTutupInstall');
+    var deferredPrompt = null;
+
+    // Cek apakah aplikasi sudah terinstall (jalan mode standalone)
+    function sudahTerinstall() {
+      return window.matchMedia('(display-mode: standalone)').matches
+          || window.navigator.standalone === true;
+    }
+
+    // Tampilkan tombol hanya kalau BELUM install & belum ditutup user sesi ini
+    function refreshBanner() {
+      if (sudahTerinstall()) { banner.classList.remove('show'); return; }
+      if (sessionStorage.getItem('installDitutup') === '1') { banner.classList.remove('show'); return; }
+      banner.classList.add('show');
+    }
+    refreshBanner();
+
+    // Chrome/Android: simpan event install bawaan browser
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      refreshBanner();
+    });
+
+    // Klik tombol Install
+    btnInstall.addEventListener('click', async function () {
+      if (deferredPrompt) {
+        // Android/Chrome desktop → tampilkan prompt install resmi
+        deferredPrompt.prompt();
+        var choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') console.log('✅ User menginstall');
+        deferredPrompt = null;
+        banner.classList.remove('show');
+      } else {
+        // iOS Safari tidak support beforeinstallprompt → arahkan manual
+        alert(' Untang Install di iPhone/iPad:\n\n1. Tap ikon Share (kotak + panah ke atas) di bawah\n2. Pilih "Tambahkan ke Layar Utama"\n3. Tap "Tambah"\n\nDi Android Chrome: menu ⋮ → "Tambahkan ke Layar Utama".');
+      }
+    });
+
+    // Tombol tutup (sembunyi sementara untuk sesi ini)
+    btnTutup.addEventListener('click', function () {
+      sessionStorage.setItem('installDitutup', '1');
+      banner.classList.remove('show');
+    });
+
+    // Sembunyikan permanen setelah berhasil install
+    window.addEventListener('appinstalled', function () {
+      sessionStorage.removeItem('installDitutup');
+      banner.classList.remove('show');
+      console.log('✅ Aplikasi terinstall');
+    });
+  })();
+  </script>
+
 </body>
 </html> 
