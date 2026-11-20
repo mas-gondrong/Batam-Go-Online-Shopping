@@ -414,7 +414,7 @@
 </head>
 <body>
 
-<!-- Loading overlay saat cek auth -->
+  <!-- Loading overlay saat cek auth -->
 <div class="auth-loading" id="authLoading">
   <i class="fas fa-spinner"></i>
   <p>Memeriksa login...</p>
@@ -764,13 +764,13 @@ function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKA
 
 <!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
 <script type="module">
-import { db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import { ref, push, set, onValue, update }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 import { lindungiHalaman, logout } from "./auth/auth-guard.js";
 
-// === CEK LOGIN: hanya admin & penjual yang boleh akses panel ini ===
-lindungiHalaman(['admin', 'penjual']).then(info => {
+// === CEK LOGIN: hanya admin yang boleh akses panel ini ===
+lindungiHalaman(['admin']).then(info => {
   if (info) {
     const overlay = document.getElementById('authLoading');
     if (overlay) overlay.style.display = 'none';
@@ -855,7 +855,10 @@ document.addEventListener("DOMContentLoaded", () => {
           nama, harga,
           hargaAsli: Math.round(harga * 100 / (100 - diskon)) || harga,
           diskon, stok, foto: gambar, deskripsi, terjual: 0,
-          kategori: kategoriDipilih
+          kategori: kategoriDipilih,
+          uidPenjual: auth.currentUser ? auth.currentUser.uid : null,
+          emailPenjual: auth.currentUser ? auth.currentUser.email : '',
+          dibuatPada: Date.now()
         });
         alert("✅ BERHASIL TERSIMPAN KE FIREBASE!");
         ["namaProduk","hargaProduk","diskonProduk","stokProduk","deskripsiProduk"]
