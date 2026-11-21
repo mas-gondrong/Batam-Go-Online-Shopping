@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ee4d2d">
+  <meta name="theme-color" content="#43a047">
   <title>Detail Produk | Toko Baju Online</title>
 
   <!-- Font Awesome -->
@@ -17,11 +17,11 @@
       font-family:Arial, sans-serif;
     }
     body {
-      background:#f5f5f5;
-      padding-bottom:80px;
+      background:#eef6fc;
+      padding-bottom:115px;
     }
     .header-detail {
-      background:#ee4d2d;
+      background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
       color:white;
       padding:14px;
       display:flex;
@@ -63,7 +63,7 @@
     }
     .harga-sekarang {
       font-size:24px;
-      color:#ee4d2d;
+      color:#2e7d46;
       font-weight:bold;
     }
     .harga-lama {
@@ -91,7 +91,7 @@
     }
     .footer-action {
       position:fixed;
-      bottom:0;
+      bottom:52px;
       left:0;
       width:100%;
       background:white;
@@ -102,7 +102,7 @@
     }
     .btn-keranjang {
       flex:1;
-      background:#ff9f1a;
+      background:#2196f3;
       color:white;
       border:none;
       padding:12px;
@@ -111,7 +111,7 @@
     }
     .btn-beli {
       flex:1;
-      background:#ee4d2d;
+      background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
       color:white;
       border:none;
       padding:12px;
@@ -131,6 +131,19 @@
   z-index:9999;
   display:none;
  }
+
+    /* BOTTOM NAVIGATION (pembeli) - duduk di bawah footer-action */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; width:100%;
+      background:white; display:flex; border-top:1px solid #eee;
+      z-index:99;
+    }
+    .bottom-nav a {
+      flex:1; text-align:center; padding:8px 0;
+      color:#999; text-decoration:none; font-size:11px;
+    }
+    .bottom-nav a i { font-size:18px; display:block; margin-bottom:2px; }
+    .bottom-nav a.active { color:#2e7d46; }
   </style>
 </head>
 <body>
@@ -282,5 +295,13 @@ if(!idProduk){
 </div>
 
 <div class="toast-sukses" id="toastSukses">✅ Berhasil dimasukkan ke Keranjang!</div>
+
+<!-- BOTTOM NAVIGATION (pembeli) - Beranda aktif karena Detail dicapai dari Beranda/daftar produk -->
+<nav class="bottom-nav">
+  <a href="index.html" class="active"><i class="fas fa-home"></i><span>Beranda</span></a>
+  <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
+  <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
+  <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
+</nav>
 </body>
-</html>
+  </html>
