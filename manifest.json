@@ -1,17 +1,22 @@
 {
-  "name": "Toko Baju Online",
-  "short_name": "TokoBaju",
-  "description": "Belanja baju mudah, aman, dan nyaman",
+  "name": "BATAM GO",
+  "short_name": "BATAM GO",
+  "description": "Belanja baju mudah, aman, dan nyaman - BATAM GO",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#ffffff",
-  "theme_color": "#ee4d2d",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#eef6fc",
+  "theme_color": "#43a047",
   "orientation": "portrait-primary",
   "lang": "id",
   "dir": "auto",
-  "categories": ["shopping"],
+  "categories": [
+    "shopping"
+  ],
   "icons": [
     {
       "src": "icon-192x192.png",
