@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#e63946">
-  <title>Semua Produk — TokoBaju</title>
+  <meta name="theme-color" content="#43a047">
+  <title>Semua Produk - TokoBaju</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -21,7 +21,7 @@
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-badge" id="badgeKeranjang">0</span>
       </a>
-      <a href="#" onclick="bukaAkun(); return false;">
+      <a href="profil.html">
         <i class="fas fa-user"></i>
       </a>
     </div>
@@ -70,7 +70,7 @@
       </a>
     </div>
 
-    <!-- DAFTAR PRODUK — id HARUS "daftarProduk" -->
+    <!-- DAFTAR PRODUK - id HARUS "daftarProduk" -->
     <div class="products-container">
       <div class="products-grid" id="daftarProduk">
         <p style="grid-column:1/-1;text-align:center;color:#888;padding:30px;">Memuat produk dari Firebase...</p>
@@ -80,5 +80,13 @@
 
   <!-- LOADER PRODUK -->
   <script type="module" src="produk-loader.js"></script>
-</body> 
-  </html>
+
+  <!-- BOTTOM NAVIGATION (pembeli) - Kategori aktif karena ini halaman Semua Produk -->
+  <nav class="bottom-nav">
+    <a href="index.html"><i class="fas fa-home"></i><span>Beranda</span></a>
+    <a href="produk.html" class="active"><i class="fas fa-th-large"></i><span>Kategori</span></a>
+    <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
+    <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
+  </nav>
+</body>
+  </html> 
