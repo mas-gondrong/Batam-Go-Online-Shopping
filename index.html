@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ee4d2d">
-  <title>TokoBaju — Belanja Online</title>
+  <meta name="theme-color" content="#43a047">
+  <title>TokoBaju - Belanja Online</title>
   
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="TokoBaju">
+  <meta name="apple-mobile-web-app-title" content="BATAM GO">
   <link rel="apple-touch-icon" href="icon-192x192.png">
   <link rel="icon" type="image/png" href="icon-192x192.png">
   
@@ -159,7 +159,7 @@ function tutupAkun() {
           <i class="fas fa-user-circle" style="font-size:52px;color:#ddd;"></i>
           <p style="margin:12px 0 4px;color:#333;font-weight:600;font-size:15px;">Kamu belum login</p>
           <p style="color:#888;font-size:13px;margin-bottom:16px;">Masuk untuk belanja & lihat pesananmu</p>
-          <a href="auth/login.html" style="display:block;background:#ee4d2d;color:white;padding:12px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">
+          <a href="auth/login.html" style="display:block;background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);color:white;padding:12px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">
             <i class="fas fa-sign-in-alt"></i> Masuk / Daftar
           </a>
         </div>
@@ -167,7 +167,7 @@ function tutupAkun() {
       return;
     }
 
-    // Sudah login — baca role & nama dari DB
+    // Sudah login - baca role & nama dari DB
     let role = 'pembeli';
     let nama = user.displayName || user.email || 'Pengguna';
     try {
@@ -195,7 +195,7 @@ function tutupAkun() {
 
     akunBody.innerHTML = `
       <div style="text-align:center;padding:20px;border-bottom:1px solid #f0f0f0;">
-        <div style="width:64px;height:64px;border-radius:50%;background:#ee4d2d;color:white;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:bold;margin:0 auto 10px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);color:white;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:bold;margin:0 auto 10px;">
           ${nama.charAt(0).toUpperCase()}
         </div>
         <div style="font-weight:600;color:#333;font-size:15px;word-break:break-word;">${nama}</div>
@@ -338,7 +338,7 @@ function tampilkanHasil() {
 if (inputCari) {
   inputCari.addEventListener("input", tampilkanHasil);
 } else {
-  console.warn('⚠️ Input #cariProduk tidak ketemu — pencarian tidak akan jalan.');
+  console.warn('⚠️ Input #cariProduk tidak ketemu - pencarian tidak akan jalan.');
 }
 
 // Klik kategori
@@ -385,21 +385,21 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
       gap: 4px;
       background: white;
       border-radius: 50px;
-      box-shadow: 0 8px 30px rgba(238,77,45,0.45), 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: 0 8px 30px rgba(67,160,71,0.45), 0 2px 8px rgba(0,0,0,0.25);
       padding: 6px 6px 6px 18px;
-      border: 2px solid #ee4d2d;
+      border: 2px solid #43a047;
       animation: pulseInstall 2.2s ease-in-out infinite;
     }
     #installBanner.show { display: flex; }
     #btnInstallPwa {
       background: none; border: none; cursor: pointer;
       display: flex; align-items: center; gap: 8px;
-      font-size: 15px; font-weight: 700; color: #ee4d2d;
+      font-size: 15px; font-weight: 700; color:#2e7d46;
       padding: 8px 4px; font-family: Arial, sans-serif;
     }
     #btnInstallPwa i { font-size: 18px; }
     #btnTutupInstall {
-      background: #f5f5f5; border: none; cursor: pointer;
+      background:#eef6fc; border: none; cursor: pointer;
       width: 28px; height: 28px; border-radius: 50%;
       font-size: 18px; color: #888; line-height: 1;
       display: flex; align-items: center; justify-content: center;
@@ -413,6 +413,49 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
       #btnInstallPwa span { font-size: 13px; }
       #installBanner { padding: 5px 5px 5px 14px; }
     }
+
+    /* ===== MODAL INFO: browser non-Chrome tidak bisa install ===== */
+    .modal-install-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.55);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-install-overlay.show { display: flex; }
+    .modal-install-box {
+      background: white; border-radius: 14px;
+      max-width: 320px; width: 100%;
+      padding: 24px 20px 18px; text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      animation: naikModal 0.25s ease-out;
+      font-family: Arial, sans-serif;
+    }
+    .modal-install-icon {
+      width: 60px; height: 60px; margin: 0 auto 12px;
+      border-radius: 50%; background: #e3f2fd;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color:#2e7d46;
+    }
+    .modal-install-box h3 {
+      margin: 0 0 10px; font-size: 18px; color: #333;
+    }
+    .modal-install-msg {
+      margin: 0 0 8px; font-size: 14px; color: #444; line-height: 1.55;
+    }
+    .modal-install-msg strong { color:#2e7d46; }
+    .modal-install-sub {
+      margin: 0 0 18px; font-size: 12px; color: #999; line-height: 1.55;
+    }
+    .modal-install-ok {
+      width: 100%; padding: 12px; background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047); color: white;
+      border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+      cursor: pointer; font-family: Arial, sans-serif;
+    }
+    .modal-install-ok:active { background: #1b5e20; }
+    @keyframes naikModal {
+      from { transform: translateY(24px) scale(0.94); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
   </style>
 
   <div id="installBanner">
@@ -420,6 +463,17 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
       <i class="fas fa-download"></i><span>Install Aplikasi</span>
     </button>
     <button id="btnTutupInstall" aria-label="Tutup">&times;</button>
+  </div>
+
+  <!-- MODAL: browser non-Chrome tidak bisa install PWA -->
+  <div id="modalInstallInfo" class="modal-install-overlay">
+    <div class="modal-install-box">
+      <div class="modal-install-icon"><i class="fab fa-chrome"></i></div>
+      <h3>Install Aplikasi</h3>
+      <p class="modal-install-msg">Aplikasi hanya bisa di-install melalui browser <strong>Chrome</strong>.</p>
+      <p class="modal-install-sub">Silakan buka aplikasi ini pakai Google Chrome (di HP atau komputer), lalu klik tombol Install lagi.</p>
+      <button id="btnTutupModalInstall" class="modal-install-ok">Mengerti</button>
+    </div>
   </div>
 
   <script>
@@ -470,8 +524,9 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
         deferredPrompt = null;
         banner.classList.remove('show');
       } else {
-        // iOS Safari tidak support beforeinstallprompt → arahkan manual
-        alert(' Aplikasi hanya bisa di Install melalui Browser Chrome:\n\n1. Buka Browser Chrome.\n2. Klik Tombol Install di layar Hp.\n3. Muncul jendela popup, lalu "Klik Install".\n\nTunggu proses install beberapa detik, setelah itu cek aplikasi di beranda hp.');
+        // Browser non-Chrome (Firefox, Hola, iOS Safari, dll) tidak mendukung
+        // beforeinstallprompt → tampilkan modal petunjuk "gunakan Chrome"
+        tampilkanModalInfo();
       }
     });
 
@@ -481,6 +536,26 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
       banner.classList.remove('show');
     });
 
+    // === MODAL INFO: browser non-Chrome tidak bisa install ===
+    var modalInfo   = document.getElementById('modalInstallInfo');
+    var btnTutupModal = document.getElementById('btnTutupModalInstall');
+
+    function tampilkanModalInfo() {
+      if (modalInfo) modalInfo.classList.add('show');
+    }
+    function tutupModalInfo() {
+      if (modalInfo) modalInfo.classList.remove('show');
+    }
+    if (btnTutupModal) {
+      btnTutupModal.addEventListener('click', tutupModalInfo);
+    }
+    // Tutup modal kalau user tap di area gelap (di luar kotak)
+    if (modalInfo) {
+      modalInfo.addEventListener('click', function (e) {
+        if (e.target === modalInfo) tutupModalInfo();
+      });
+    }
+
     // Sembunyikan permanen setelah berhasil install
     window.addEventListener('appinstalled', function () {
       sessionStorage.removeItem('installDitutup');
@@ -489,6 +564,5 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
     });
   })();
   </script>
-
 </body>
 </html> 
