@@ -2,120 +2,120 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial‑scale=1.0">
-  <meta name="theme‑color" content="#ee4d2d">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#43a047">
   <title>Checkout Pesanan | Toko Baju Online</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
   <style>
   * {
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:Arial, sans‑serif;
+  font-family:Arial, sans-serif;
 }
 body {
-  background:#f5f5f5;
-  padding‑bottom:90px;
+  background:#eef6fc;
+  padding-bottom:90px;
 }
-.header‑checkout {
-  background:#ee4d2d;
+.header-checkout {
+  background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
   color:white;
   padding:14px;
   display:flex;
-  align‑items:center;
+  align-items:center;
   gap:12px;
   position:sticky;
   top:0;
-  z‑index:99;
+  z-index:99;
 }
-.header‑checkout a {
+.header-checkout a {
   color:white;
-  font‑size:20px;
-  text‑decoration:none;
+  font-size:20px;
+  text-decoration:none;
 }
 .wrap {
   padding:15px;
 }
 .box {
   background:white;
-  border‑radius:8px;
+  border-radius:8px;
   padding:14px;
-  margin‑bottom:12px;
+  margin-bottom:12px;
 }
 .box h4 {
-  margin‑bottom:10px;
+  margin-bottom:10px;
 }
 input, textarea {
   width:100%;
   padding:10px;
-  margin‑bottom:8px;
+  margin-bottom:8px;
   border:1px solid #ddd;
-  border‑radius:6px;
+  border-radius:6px;
 }
 
 /* ✅ PERBAIKAN GAMBAR CHECKOUT (INI YANG PERBAIKI FOTO MELEBAR) */
-.item‑checkout {
+.item-checkout {
   display:flex;
   gap:10px;
-  margin‑bottom:8px;
-  align‑items:center;
+  margin-bottom:8px;
+  align-items:center;
 }
-.item‑checkout img {
+.item-checkout img {
   width:70px;
   height:70px;
-  object‑fit:cover;
-  border‑radius:6px;
-  flex‑shrink:0; /* JANGAN GAMBAR DIPERKECIL / MEMELEBAR */
+  object-fit:cover;
+  border-radius:6px;
+  flex-shrink:0; /* JANGAN GAMBAR DIPERKECIL / MEMELEBAR */
 }
 
-.row‑harga {
+.row-harga {
   display:flex;
-  justify‑content:space‑between;
+  justify-content:space-between;
   margin:6px 0;
 }
-.total‑akhir {
-  font‑size:18px;
-  font‑weight:bold;
-  color:#ee4d2d;
+.total-akhir {
+  font-size:18px;
+  font-weight:bold;
+  color:#2e7d46;
 }
-.btn‑pesan {
+.btn-pesan {
   width:100%;
-  background:#ee4d2d;
+  background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
   color:white;
   border:none;
   padding:14px;
-  border‑radius:8px;
-  font‑size:16px;
+  border-radius:8px;
+  font-size:16px;
 }
 
     .item-checkout {
   display:flex;
   gap:10px;
-  margin‑bottom:8px;
-  align‑items:center;
+  margin-bottom:8px;
+  align-items:center;
 }
 .item-checkout img {
   width:70px;
   height:70px;
-  object‑fit:cover;
-  border‑radius:6px;
-  flex‑shrink:0;
+  object-fit:cover;
+  border-radius:6px;
+  flex-shrink:0;
 }
 #toastCheckout{
   position:fixed;
   bottom:130px;
   left:50%;
   transform:translateX(-50%);
-  background‑color:#22c55e;
+  background-color:#22c55e;
   color:#ffffff;
   padding:14px 22px;
-  border‑radius:8px;
-  z‑index:9999;
+  border-radius:8px;
+  z-index:9999;
   display:none;
-  max‑width:90%;
-  text‑align:center;
+  max-width:90%;
+  text-align:center;
 }
 
 
@@ -125,20 +125,33 @@ input, textarea {
   bottom:130px;
   left:50%;
   transform:translateX(-50%);
-  background‑color:#22c55e;
+  background-color:#22c55e;
   color:#ffffff;
   padding:14px 22px;
-  border‑radius:8px;
-  z‑index:9999;
+  border-radius:8px;
+  z-index:9999;
   display:none;
-  max‑width:90%;
-  text‑align:center;
+  max-width:90%;
+  text-align:center;
 }
+
+    /* BOTTOM NAVIGATION (pembeli) */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; width:100%;
+      background:white; display:flex; border-top:1px solid #eee;
+      z-index:99;
+    }
+    .bottom-nav a {
+      flex:1; text-align:center; padding:8px 0;
+      color:#999; text-decoration:none; font-size:11px;
+    }
+    .bottom-nav a i { font-size:18px; display:block; margin-bottom:2px; }
+    .bottom-nav a.active { color:#2e7d46; }
   </style>
 </head>
 <body>
-  <div class="header‑checkout">
-    <a href="keranjang.html"><i class="fas fa‑arrow‑left"></i></a>
+  <div class="header-checkout">
+    <a href="keranjang.html"><i class="fas fa-arrow-left"></i></a>
     <h3>Checkout Pesanan</h3>
   </div>
 
@@ -176,8 +189,6 @@ input, textarea {
 <button class="btn-pesan" id="btnKirimPesanan">Kirim Pesanan Ke Penjual</button>
 </div>
 
-<div class="toast-sukses" id="toastCheckout">✅ Pesanan Berhasil Dikirim!</di
-                                                                          v>
 <!-- FIREBASE -->
 <script type="module" src="firebase-config.js"></script>
 <script type="module">
@@ -298,5 +309,13 @@ muatCheckout();
 
 <!-- TOAST -->
 <div id="toastCheckout">✅ Pesanan Berhasil Dikirim!</div>
+
+<!-- BOTTOM NAVIGATION (pembeli) - Keranjang aktif karena Checkout lanjutan keranjang -->
+<nav class="bottom-nav">
+  <a href="index.html"><i class="fas fa-home"></i><span>Beranda</span></a>
+  <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
+  <a href="keranjang.html" class="active"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
+  <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
+</nav>
 </body>
 </html> 
