@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ee4d2d">
+  <meta name="theme-color" content="#43a047">
   <title>Keranjang Belanja | Toko Baju Online</title>
 
   <!-- Font Awesome -->
@@ -17,11 +17,11 @@
       font-family:Arial, sans-serif;
     }
     body {
-      background:#f5f5f5;
+      background:#eef6fc;
       padding-bottom:110px;
     }
     .header-keranjang {
-      background:#ee4d2d;
+      background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
       color:white;
       padding:14px;
       display:flex;
@@ -61,7 +61,7 @@
       margin-bottom:4px;
     }
     .harga-item {
-      color:#ee4d2d;
+      color:#2e7d46;
       font-weight:bold;
     }
     .jumlah-group {
@@ -104,10 +104,10 @@
     .total-harga {
       font-size:18px;
       font-weight:bold;
-      color:#ee4d2d;
+      color:#2e7d46;
     }
     .btn-checkout {
-      background:#ee4d2d;
+      background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
       color:white;
       border:none;
       padding:10px 18px;
@@ -131,7 +131,7 @@
       font-size:12px;
     }
     .bottom-nav a.active {
-      color:#ee4d2d;
+      color:#2e7d46;
     }
   </style>
 </head>
@@ -146,7 +146,7 @@
 
   <div class="footer-total" id="boxTotal">
     <div>Total: <span class="total-harga" id="textTotal">Rp 0</span></div>
-    <button class="btn‑checkout" onclick="window.location.href='checkout.html'">Checkout</button>
+    <button class="btn-checkout" onclick="window.location.href='checkout.html'">Checkout</button>
   </div>
 
   <!-- NAV BAWAH -->
@@ -155,9 +155,9 @@
       <i class="fas fa-home"></i>
       <span>Beranda</span>
     </a>
-    <a href="riwayat.html">
-      <i class="fas fa-shopping-bag"></i>
-      <span>Pesanan Saya</span>
+    <a href="produk.html">
+      <i class="fas fa-th-large"></i>
+      <span>Kategori</span>
     </a>
     <a href="keranjang.html" class="active">
       <i class="fas fa-shopping-cart"></i>
@@ -236,5 +236,4 @@ function hapusItem(indeks){
 window.addEventListener("DOMContentLoaded", muatKeranjang);
 </script>
 </body>
-  </html>
-  
+</html>
