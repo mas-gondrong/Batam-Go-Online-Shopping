@@ -1,53 +1,53 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF‑8">
-  <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
-  <meta name="theme‑color" content="#ee4d2d">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#43a047">
   <title>Riwayat Pesanan Saya | Toko Baju Online</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font‑awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     * {
       margin:0;
       padding:0;
-      box‑sizing:border‑box;
-      font‑family:Arial, sans‑serif;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
     }
     body {
-      background:#f5f5f5;
-      padding‑bottom:80px;
+      background:#eef6fc;
+      padding-bottom:80px;
     }
     .header {
-      background:#ee4d2d;
+      background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
       color:white;
       padding:14px;
       display:flex;
-      align‑items:center;
+      align-items:center;
       gap:12px;
       position:sticky;
       top:0;
     }
     .header a {
       color:white;
-      font‑size:20px;
-      text‑decoration:none;
+      font-size:20px;
+      text-decoration:none;
     }
     .wrap {
       padding:15px;
     }
-    .card‑pesanan {
+    .card-pesanan {
       background:white;
-      border‑radius:8px;
+      border-radius:8px;
       padding:14px;
-      margin‑bottom:12px;
+      margin-bottom:12px;
     }
     .status {
       padding:6px 10px;
-      border‑radius:4px;
+      border-radius:4px;
       color:white;
-      font‑size:13px;
-      display:inline‑block;
-      margin‑bottom:8px;
+      font-size:13px;
+      display:inline-block;
+      margin-bottom:8px;
     }
     .status.menunggu {
       background:#f59e0b;
@@ -61,23 +61,36 @@
     .status.selesai {
       background:#22c55e;
     }
-    .item‑riwayat {
+    .item-riwayat {
       display:flex;
       gap:10px;
       margin:8px 0;
-      align‑items:center;
+      align-items:center;
     }
-    .item‑riwayat img {
+    .item-riwayat img {
       width:60px;
       height:60px;
-      object‑fit:cover;
-      border‑radius:6px;
+      object-fit:cover;
+      border-radius:6px;
     }
-    .text‑kosong {
-      text‑align:center;
-      padding:40px 20px;
+    .text-kosong {
+      text-align:center;
+      padding:40px 20px;
       color:#777;
     }
+
+    /* BOTTOM NAVIGATION (pembeli) */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; width:100%;
+      background:white; display:flex; border-top:1px solid #eee;
+      z-index:99;
+    }
+    .bottom-nav a {
+      flex:1; text-align:center; padding:8px 0;
+      color:#999; text-decoration:none; font-size:11px;
+    }
+    .bottom-nav a i { font-size:18px; display:block; margin-bottom:2px; }
+    .bottom-nav a.active { color:#2e7d46; }
   </style>
 </head>
   <body>
@@ -89,6 +102,14 @@
   <div class="wrap" id="kontenRiwayat">
     <p style="text-align:center;">Memuat data...</p>
   </div>
+
+  <!-- BOTTOM NAVIGATION (pembeli) - Akun aktif karena Riwayat ada di bawah Akun -->
+  <nav class="bottom-nav">
+    <a href="index.html"><i class="fas fa-home"></i><span>Beranda</span></a>
+    <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
+    <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
+    <a href="profil.html" class="active"><i class="fas fa-user"></i><span>Akun</span></a>
+  </nav>
 
   <script type="module">
     import { auth, db } from './firebase-config.js';
@@ -170,7 +191,7 @@
     htmlBarang = daftarBarang.map(brg => `
       <div style="display:flex;align-items:center;gap:10px;margin:8px 0;">
         <img src="${brg.foto || 'https://picsum.photos/id/21/100/100'}" alt="${brg.nama || ''}"
-             style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#f5f5f5;">
+             style="width:64px;height:64px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#eef6fc;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:14px;line-height:1.3;word-break:break-word;">${brg.nama || '(Tanpa nama)'}</div>
           <div style="font-size:12px;color:#888;">Qty: ${brg.jumlah || 1}</div>
@@ -184,9 +205,6 @@
   const total   = Number(pesan.totalBayar || 0).toLocaleString('id-ID');
   const status  = pesan.status || "-";
   const tanggal = pesan.tanggal || "-";
-
-  // DEBUG: border warna berbeda per kartu supaya batasnya kelihatan jelas
-  const warna = ['red','blue','green','orange','purple','brown','teal'][idx % 7];
 
   // Tombol "Pesanan Sudah Diterima" muncul HANYA saat status Sedang Dikirim.
   // Klik → status jadi "Selesai" + catat diterimaPada → sync ke admin & penjual (real-time via onValue).
@@ -208,7 +226,7 @@
   }
 
   return `
-    <section style="display:block;border:2px solid ${warna};border-radius:8px;padding:12px;margin:0 0 12px 0;background:white;">
+    <section style="display:block;border:1px solid #eee;border-left:4px solid #43a047;border-radius:8px;padding:12px;margin:0 0 12px 0;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
       <span class="status ${kelasStatus}">${status}</span>
       <div><small>Tanggal: ${tanggal}</small></div>
       ${htmlBarang}
@@ -226,7 +244,7 @@
 
         console.log("✅ Riwayat pesanan dimuat:", listPesanan.length, "item");
       }, (error) => {
-        // Callback error — supaya kegagalan tidak diam-diam
+        // Callback error - supaya kegagalan tidak diam-diam
         console.error("❌ GAGAL BACA RIWAYAT PESANAN:", error);
         kontenRiwayat.innerHTML = `
           <p style="text-align:center;padding:20px;color:#dc3545;">
