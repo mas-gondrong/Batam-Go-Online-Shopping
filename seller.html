@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ee4d2d">
+  <meta name="theme-color" content="#43a047">
   <title>Dashboard Penjual | Toko Baju Online</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background: #f5f5f5; padding-bottom: 80px; }
+    body { background:#eef6fc; padding-bottom: 80px; }
 
     /* HEADER */
     .header {
-      background: #ee4d2d;
+      background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047);
       color: white;
       padding: 14px 16px;
       display: flex;
@@ -48,7 +48,7 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .stat-card h3 { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 4px; }
-    .stat-card .value { font-size: 22px; font-weight: bold; color: #ee4d2d; }
+    .stat-card .value { font-size: 22px; font-weight: bold; color:#2e7d46; }
     .stat-card small { display: block; font-size: 10px; color: #aaa; margin-top: 2px; }
 
     /* TABS */
@@ -71,7 +71,7 @@
       font-weight: 600;
     }
     .tab i { display: block; font-size: 16px; margin-bottom: 3px; }
-    .tab.active { color: #ee4d2d; border-bottom-color: #ee4d2d; }
+    .tab.active { color:#2e7d46; border-bottom-color:#2e7d46; }
 
     .tab-content { display: none; padding: 15px; }
     .tab-content.active { display: block; }
@@ -88,11 +88,11 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .produk-row img {
-      width: 64px; height: 64px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #f5f5f5;
+      width: 64px; height: 64px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background:#eef6fc;
     }
     .produk-info { flex: 1; min-width: 0; }
     .produk-info .nama { font-size: 14px; font-weight: 600; color: #333; line-height: 1.3; word-break: break-word; }
-    .produk-info .harga { font-size: 13px; color: #ee4d2d; font-weight: 600; margin-top: 2px; }
+    .produk-info .harga { font-size: 13px; color:#2e7d46; font-weight: 600; margin-top: 2px; }
     .produk-info .meta { font-size: 11px; color: #999; margin-top: 2px; }
     .produk-aksi { display: flex; flex-direction: column; gap: 6px; }
     .btn-aksi {
@@ -114,13 +114,13 @@
     .form-group input, .form-group textarea {
       width: 100%; padding: 9px 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; font-family: Arial, sans-serif;
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: #ee4d2d; }
+    .form-group input:focus, .form-group textarea:focus { border-color:#2e7d46; }
     .form-group small { color: #888; font-size: 11px; }
     .kategori-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; font-size: 13px; margin-top: 4px; }
     .kategori-grid label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 400; }
     #previewFoto { width: 100%; max-width: 180px; height: auto; border-radius: 6px; margin-top: 6px; }
     .btn-simpan-form {
-      width: 100%; background: #ee4d2d; color: white; border: none;
+      width: 100%; background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047); color: white; border: none;
       padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;
     }
     .btn-simpan-form:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -147,7 +147,7 @@
     .pesanan-item { display: flex; gap: 8px; align-items: center; margin: 6px 0; font-size: 12px; }
     .pesanan-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
     .pesanan-item .mine { color: #28a745; font-size: 10px; font-weight: 600; }
-    .pesanan-total { font-size: 13px; font-weight: 600; color: #ee4d2d; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px; }
+    .pesanan-total { font-size: 13px; font-weight: 600; color:#2e7d46; margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px; }
 
     .text-kosong { text-align: center; padding: 40px 20px; color: #999; }
     .text-kosong i { font-size: 40px; color: #ddd; }
@@ -158,7 +158,7 @@
       position: fixed; inset: 0; background: white; z-index: 999;
       display: flex; align-items: center; justify-content: center; flex-direction: column;
     }
-    .loading-overlay i { font-size: 36px; color: #ee4d2d; animation: spin 1s linear infinite; }
+    .loading-overlay i { font-size: 36px; color:#2e7d46; animation: spin 1s linear infinite; }
     .loading-overlay p { margin-top: 12px; color: #888; font-size: 14px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -171,7 +171,7 @@
       flex: 1; text-align: center; padding: 8px 0; color: #999; text-decoration: none; font-size: 11px;
     }
     .bottom-nav a i { font-size: 18px; display: block; margin-bottom: 2px; }
-    .bottom-nav a.active { color: #ee4d2d; }
+    .bottom-nav a.active { color:#2e7d46; }
   </style>
 </head>
 <body>
