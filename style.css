@@ -153,33 +153,87 @@ button {
 /* =====================================
    KATEGORI
 ===================================== */
-.categories {
+/* LACI KATEGORI: bar horizontal + panel turun (drawer) */
+.kategori-wrap {
+  position: relative;
+  margin: 10px 8px 0;
+}
+.kategori-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: var(--white);
-  margin: 8px;
-  padding: 12px;
-  border-radius: 2px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 11px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--dark);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  font-family: inherit;
+}
+.kategori-bar:active { transform: translateY(1px); }
+.kb-kiri { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.kb-kiri .kb-icon { color: var(--primary); font-size: 16px; }
+.kb-kiri .kb-label { color: #888; }
+.kb-kiri b { color: var(--dark); font-weight: 600; }
+.kb-panah { color: #888; transition: transform 0.25s ease; font-size: 13px; }
+.kategori-wrap.terbuka .kb-panah { transform: rotate(180deg); }
+
+.kategori-drawer {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.14);
+  padding: 10px;
+  z-index: 50;
+}
+.kategori-wrap.terbuka .kategori-drawer {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  animation: laciTurun 0.22s ease;
+}
+@keyframes laciTurun {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .category-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 12px;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  font-size: 11px;
   color: var(--dark);
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px 4px;
+  transition: background .15s, color .15s;
 }
-
-.category-item i,
-.category-item img {
-  font-size: 22px;
+.category-item i {
+  font-size: 20px;
   color: var(--primary);
-  margin-bottom: 4px;
-  width: 32px;
-  height: 32px;
+}
+.category-item img {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
+.category-item.aktif {
+  background: var(--primary);
+  color: #fff;
+}
+.category-item.aktif i,
+.category-item.aktif img { color: #fff; }
 
 /* =====================================
    JUDUL BAGIAN
