@@ -54,7 +54,7 @@ function tampilkanHasil() {
       } else {
         k = [];
       }
-      if (Number(p.diskon) > 0 && !k.includes("diskon")) k.push("diskon");
+      // (kategori "diskon" otomatis dihapus — sekarang kategori = klasifikasi produk)
       return k.includes(kategoriAktif);
     });
   }
@@ -109,13 +109,26 @@ if (inputCari) {
   console.warn('⚠️ Input #cariProduk tidak ketemu — pencarian tidak akan jalan.');
 }
 
-// Klik kategori
+// ===== LACI KATEGORI: toggle bar + tutup saat klik di luar + update label =====
+const kategoriWrap = document.getElementById('kategoriWrap');
+const kategoriBar = document.getElementById('kategoriBar');
+const kategoriTerpilih = document.getElementById('kategoriTerpilih');
+if (kategoriBar) {
+  kategoriBar.addEventListener('click', () => kategoriWrap.classList.toggle('terbuka'));
+}
+document.addEventListener('click', (e) => {
+  if (kategoriWrap && !kategoriWrap.contains(e.target)) kategoriWrap.classList.remove('terbuka');
+});
+
+// Klik kategori di dalam laci
 tombolFilter.forEach(btn => {
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     tombolFilter.forEach(b => b.classList.remove("aktif"));
     btn.classList.add("aktif");
     kategoriAktif = btn.dataset.kategori || "semua";
+    if (kategoriTerpilih) kategoriTerpilih.textContent = btn.querySelector('span')?.textContent || 'Semua';
+    if (kategoriWrap) kategoriWrap.classList.remove('terbuka');
     tampilkanHasil();
   });
 }); 
