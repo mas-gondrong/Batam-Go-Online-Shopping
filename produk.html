@@ -36,38 +36,24 @@
       <span>Semua Produk</span>
     </div>
 
-    <!-- KATEGORI (nilai data-kategori = sama persis dengan index.html) -->
-    <div class="categories">
-      <a href="#" class="category-item aktif" data-kategori="semua">
-        <i class="fas fa-th-large"></i><span>Semua</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="wanita">
-        <i class="fas fa-female"></i><span>Wanita</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="pria">
-        <i class="fas fa-male"></i><span>Pria</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="atasan">
-        <i class="fas fa-tshirt"></i><span>Atasan</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="aksesoris">
-        <i class="fas fa-socks"></i><span>Aksesoris</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="musimdingin">
-        <i class="fas fa-snowflake"></i><span>Musim Dingin</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="promo">
-        <i class="fas fa-fire"></i><span>Promo</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="terlaris">
-        <i class="fas fa-star"></i><span>Terlaris</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="terbaru">
-        <i class="fas fa-clock"></i><span>Terbaru</span>
-      </a>
-      <a href="#" class="category-item" data-kategori="diskon">
-        <i class="fas fa-tag"></i><span>Diskon</span>
-      </a>
+    <!-- KATEGORI (LACI/DRAWER) -->
+    <div class="kategori-wrap" id="kategoriWrap">
+      <button class="kategori-bar" id="kategoriBar" type="button">
+        <span class="kb-kiri"><i class="fas fa-th-large kb-icon"></i><span class="kb-label">Kategori:</span> <b id="kategoriTerpilih">Semua</b></span>
+        <i class="fas fa-chevron-down kb-panah"></i>
+      </button>
+      <div class="kategori-drawer" id="kategoriDrawer">
+        <a href="#" class="category-item aktif" data-kategori="semua"><i class="fas fa-th-large"></i><span>Semua</span></a>
+        <a href="#" class="category-item" data-kategori="pakaian-pria"><i class="fas fa-male"></i><span>Pakaian Pria</span></a>
+        <a href="#" class="category-item" data-kategori="pakaian-wanita"><i class="fas fa-female"></i><span>Pakaian Wanita</span></a>
+        <a href="#" class="category-item" data-kategori="mobil"><i class="fas fa-car"></i><span>Mobil</span></a>
+        <a href="#" class="category-item" data-kategori="motor"><i class="fas fa-motorcycle"></i><span>Motor</span></a>
+        <a href="#" class="category-item" data-kategori="prabotan"><i class="fas fa-couch"></i><span>Prabotan</span></a>
+        <a href="#" class="category-item" data-kategori="elektronik"><i class="fas fa-tv"></i><span>Elektronik</span></a>
+        <a href="#" class="category-item" data-kategori="alat-musik"><i class="fas fa-guitar"></i><span>Alat Musik</span></a>
+        <a href="#" class="category-item" data-kategori="aksesoris"><i class="fas fa-gem"></i><span>Aksesoris</span></a>
+        <a href="#" class="category-item" data-kategori="lainnya"><i class="fas fa-box-open"></i><span>Lainnya</span></a>
+      </div>
     </div>
 
     <!-- DAFTAR PRODUK - id HARUS "daftarProduk" -->
