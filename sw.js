@@ -1,4 +1,8 @@
-const CACHE_NAME = 'toko-baju-v83';
+// ===================================================
+//  SERVICE WORKER — Batam Go Online Shopping (PWA)
+//  Versi fault-tolerant: 1 aset gagal tidak crash install
+// ===================================================
+const CACHE_NAME = 'batam-go-v83';
 const ASSETS = [
   './',
   './index.html',
