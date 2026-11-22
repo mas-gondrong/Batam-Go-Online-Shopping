@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#43a047">
-  <title>TokoBaju - Belanja Online</title>
+  <title>BATAM GO - Belanja Online</title>
   
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
@@ -358,14 +358,14 @@ tombolFilter.forEach(btn => {
 function updateBadgeKeranjang(){
   const keranjang = JSON.parse(localStorage.getItem("keranjangToko")) || [];
   // Hitung SEMUA jumlah keseluruhan barang (bukan cuma jumlah item)
-  let totalBarang = 0;
+  let totalBarang = 0;
   keranjang.forEach(item=> totalBarang += Number(item.jumlah));
 
   const badge = document.getElementById("badgeKeranjang");
   if(badge){
     badge.innerText = totalBarang;
     // Kalau 0 sembunyikan badge
-    badge.style.display = totalBarang === 0 ? "none" : "grid";
+    badge.style.display = totalBarang === 0 ? "none" : "grid";
   }
 }
 
@@ -564,5 +564,6 @@ window.addEventListener("DOMContentLoaded", updateBadgeKeranjang);
     });
   })();
   </script>
+
 </body>
 </html> 
