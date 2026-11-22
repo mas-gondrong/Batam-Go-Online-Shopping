@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DEBUG Auth — Toko Baju Online</title>
+  <title>DEBUG Auth - BATAM GO</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #f5f5f5; padding: 16px; color: #333; }
+    body { background:#eef6fc; padding: 16px; color: #333; }
     .card { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
     h1 { font-size: 18px; margin-bottom: 6px; }
     h2 { font-size: 14px; margin-bottom: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
     .field { margin-bottom: 10px; }
     .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
     .field input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-    .btn { height: 42px; background: #ee4d2d; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
+    .btn { height: 42px; background:linear-gradient(135deg,#e53935,#fb8c00 55%,#43a047); color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; font-family: "SF Mono", Consolas, monospace; line-height: 1.5; }
     .status-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px; }
@@ -31,7 +31,7 @@
 <body>
 
 <div class="card">
-  <h1>🔧 Debug Auth — Toko Baju Online</h1>
+  <h1>🔧 Debug Auth - Batam Go Online Shopping</h1>
   <p class="hint">Halaman ini untuk melihat persis apa yang terjadi saat login. Login di sini, lalu copy semua teks di kotak hitam di bawah ke chat.</p>
 </div>
 
@@ -115,7 +115,7 @@
       log('   Email: ' + cred.user.email);
       await jalankanDebug(cred.user.uid, cred.user.email);
     } catch (err) {
-      log('❌ Login GAGAL: ' + (err.code || '') + ' — ' + err.message, 'err');
+      log('❌ Login GAGAL: ' + (err.code || '') + ' - ' + err.message, 'err');
       setStatus('<div class="status-row"><span class="label">Login gagal</span><span class="value err">' + (err.code || err.message) + '</span></div>');
     } finally {
       btn.disabled = false;
@@ -138,7 +138,7 @@
       log('  Snapshot exists? ' + snap1.exists(), snap1.exists() ? 'ok' : 'warn');
       log('  Value: ' + JSON.stringify(snap1.val()));
     } catch (err) {
-      log('  ERROR baca role: ' + err.code + ' — ' + err.message, 'err');
+      log('  ERROR baca role: ' + err.code + ' - ' + err.message, 'err');
     }
 
     // Tes 2: baca users/{uid} (node utuh)
@@ -154,7 +154,7 @@
         log('  → Node users/{uid} TIDAK ADA. Ini penyebab error "belum punya data peran".', 'err');
       }
     } catch (err) {
-      log('  ERROR baca node: ' + err.code + ' — ' + err.message, 'err');
+      log('  ERROR baca node: ' + err.code + ' - ' + err.message, 'err');
     }
 
     // Tes 3: baca users/ utuh (lihat semua UID yang ada)
@@ -182,7 +182,7 @@
         log('  → Node users/ KOSONG. Belum ada data user di database sama sekali.', 'err');
       }
     } catch (err) {
-      log('  ERROR baca users/: ' + err.code + ' — ' + err.message, 'err');
+      log('  ERROR baca users/: ' + err.code + ' - ' + err.message, 'err');
     }
 
     log('', 'info');
