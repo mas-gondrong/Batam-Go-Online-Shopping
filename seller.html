@@ -222,6 +222,9 @@
     <div class="tab" data-tab="pesanan">
       <i class="fas fa-shopping-bag"></i>Pesanan Masuk
     </div>
+    <div class="tab" data-tab="toko">
+      <i class="fas fa-store"></i>Profil Toko
+    </div>
   </div>
 
   <!-- TAB 1: PRODUK SAYA -->
@@ -294,13 +297,45 @@
     </div>
   </div>
 
+  <!-- TAB 4: PROFIL TOKO (namaToko, deskripsi, foto, WhatsApp publik) -->
+  <div class="tab-content" id="tab-toko">
+    <div class="form-card">
+      <h3>Profil Toko</h3>
+      <p style="font-size:13px;color:#666;margin-bottom:14px;">Kelola identitas toko Anda. Info ini dilihat pembeli di halaman toko.</p>
+
+      <div class="form-group">
+        <label>Nama Toko *</label>
+        <input type="text" id="namaTokoInput" placeholder="Contoh: Batam Fashion Store" maxlength="40">
+      </div>
+      <div class="form-group">
+        <label>Deskripsi Toko</label>
+        <textarea id="deskripsiTokoInput" rows="3" placeholder="Ceritakan singkat tentang toko Anda..." maxlength="300"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Foto / Logo Toko</label>
+        <input type="file" id="fotoTokoInput" accept="image/*">
+        <small>Otomatis diperkecil (maks 400px, tampil bulat)</small>
+        <img id="previewFotoToko" style="display:none;width:90px;height:90px;object-fit:cover;border-radius:50%;margin-top:8px;border:2px solid #eee;">
+      </div>
+      <div class="form-group">
+        <label>Nomor WhatsApp (untuk pembeli)</label>
+        <input type="tel" id="whatsappInput" placeholder="08xxxxxxxxxx" maxlength="15">
+        <small>Pembeli bisa chat Anda via tombol WhatsApp di profil toko.</small>
+      </div>
+
+      <button class="btn-simpan-form" id="btnSimpanToko">
+        <i class="fas fa-save"></i> Simpan Profil Toko
+      </button>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <a href="index.html"><i class="fas fa-home"></i><span>Beranda</span></a>
     <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
     <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
     <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
-  </nav>
+        </nav>
 
   <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
   <script>
@@ -358,6 +393,7 @@
     let infoUser = null;
     let modeForm = 'tambah';   // 'tambah' | 'edit'
     let idProdukEdit = null;
+    let fotoTokoBase64 = "";   // base64 foto/logo toko (tab Profil Toko)
 
     // === GATE: hanya penjual yang boleh akses ===
     lindungiHalaman(['penjual']).then(info => {
@@ -368,6 +404,8 @@
       muatProdukSaya();
       muatPesananMasuk();
       pasangFormHandler();
+      muatProfilToko();
+      pasangHandlerToko();
     });
 
     // === LOGOUT ===
@@ -756,6 +794,76 @@
         console.error('Gagal muat pesanan:', err);
         wadah.innerHTML = `<div class="text-kosong" style="color:#dc3545;"><i class="fas fa-exclamation-triangle"></i><p>Gagal memuat pesanan: ${escapeHtml(err.message)}</p></div>`;
       });
+    }
+
+    // =====================================================
+    //  PROFIL TOKO (tab "Profil Toko": namaToko, deskripsi, foto, whatsapp)
+    //  Simpan ke penjual/{uid}. Dibaca pembeli via toko.html.
+    // =====================================================
+    function normalisasiWa(n) {
+      let s = String(n || '').replace(/\D/g, '');     // ambil digit saja
+      if (s.startsWith('0')) s = '62' + s.slice(1);   // 08xx → 628xx
+      else if (s.startsWith('8')) s = '62' + s;       // 8xx → 628xx
+      return s;
+    }
+
+    async function muatProfilToko() {
+      try {
+        const snap = await get(ref(db, 'penjual/' + infoUser.uid));
+        const t = snap.val() || {};
+        document.getElementById('namaTokoInput').value = t.namaToko || '';
+        document.getElementById('deskripsiTokoInput').value = t.deskripsi || '';
+        document.getElementById('whatsappInput').value = t.whatsapp || '';
+        fotoTokoBase64 = t.foto || '';
+        if (t.foto) {
+          const prev = document.getElementById('previewFotoToko');
+          prev.src = t.foto; prev.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Gagal muat profil toko:', err);
+      }
+    }
+
+    function pasangHandlerToko() {
+      const inputFoto = document.getElementById('fotoTokoInput');
+      const preview = document.getElementById('previewFotoToko');
+      inputFoto.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) { preview.style.display = 'none'; return; }
+        try {
+          const hasil = await kompresGambar(file, 400, 0.6);
+          fotoTokoBase64 = hasil.base64;
+          preview.src = hasil.base64;
+          preview.style.display = 'block';
+        } catch (err) {
+          alert('❌ ' + err.message);
+          preview.style.display = 'none';
+        }
+      });
+      document.getElementById('btnSimpanToko').addEventListener('click', simpanProfilToko);
+    }
+
+    async function simpanProfilToko() {
+      const namaToko = document.getElementById('namaTokoInput').value.trim();
+      const deskripsi = document.getElementById('deskripsiTokoInput').value.trim();
+      const waRaw = document.getElementById('whatsappInput').value.trim();
+      if (!namaToko) { alert('❌ Nama toko wajib diisi.'); return; }
+      const whatsapp = waRaw ? normalisasiWa(waRaw) : '';
+      const btn = document.getElementById('btnSimpanToko');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+      try {
+        const data = { namaToko, deskripsi };
+        if (fotoTokoBase64) data.foto = fotoTokoBase64;
+        if (whatsapp) data.whatsapp = whatsapp;
+        await update(ref(db, 'penjual/' + infoUser.uid), data);
+        alert('✅ Profil toko tersimpan! Pembeli sekarang bisa melihat info terbaru di halaman toko Anda.');
+      } catch (err) {
+        alert('❌ Gagal simpan profil toko: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Simpan Profil Toko';
+      }
     }
 
     // === HELPER ESCAPE ===
