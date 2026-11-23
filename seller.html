@@ -322,6 +322,25 @@
         <input type="tel" id="whatsappInput" placeholder="08xxxxxxxxxx" maxlength="15">
         <small>Pembeli bisa chat Anda via tombol WhatsApp di profil toko.</small>
       </div>
+      <div class="form-group">
+        <label>Kecamatan (Batam)</label>
+        <select id="kecamatanInput" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;font-family:inherit;background:white;">
+          <option value="">— Pilih kecamatan —</option>
+          <option value="Batam Kota">Batam Kota</option>
+          <option value="Batu Aji">Batu Aji</option>
+          <option value="Batu Ampar">Batu Ampar</option>
+          <option value="Belakang Padang">Belakang Padang</option>
+          <option value="Bengkong">Bengkong</option>
+          <option value="Bulang">Bulang</option>
+          <option value="Galang">Galang</option>
+          <option value="Lubuk Baja">Lubuk Baja</option>
+          <option value="Nongsa">Nongsa</option>
+          <option value="Sagulung">Sagulung</option>
+          <option value="Sei Beduk">Sei Beduk</option>
+          <option value="Sekupang">Sekupang</option>
+        </select>
+        <small>Lokasi toko terlihat pembeli. (Tiban, Tiban Indah, dll masuk Sekupang.)</small>
+      </div>
 
       <button class="btn-simpan-form" id="btnSimpanToko">
         <i class="fas fa-save"></i> Simpan Profil Toko
@@ -335,7 +354,7 @@
     <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
     <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
     <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
-        </nav>
+  </nav>
 
   <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
   <script>
@@ -814,6 +833,7 @@
         document.getElementById('namaTokoInput').value = t.namaToko || '';
         document.getElementById('deskripsiTokoInput').value = t.deskripsi || '';
         document.getElementById('whatsappInput').value = t.whatsapp || '';
+        document.getElementById('kecamatanInput').value = t.kecamatan || '';
         fotoTokoBase64 = t.foto || '';
         if (t.foto) {
           const prev = document.getElementById('previewFotoToko');
@@ -847,13 +867,14 @@
       const namaToko = document.getElementById('namaTokoInput').value.trim();
       const deskripsi = document.getElementById('deskripsiTokoInput').value.trim();
       const waRaw = document.getElementById('whatsappInput').value.trim();
+      const kecamatan = document.getElementById('kecamatanInput').value;
       if (!namaToko) { alert('❌ Nama toko wajib diisi.'); return; }
       const whatsapp = waRaw ? normalisasiWa(waRaw) : '';
       const btn = document.getElementById('btnSimpanToko');
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
       try {
-        const data = { namaToko, deskripsi };
+        const data = { namaToko, deskripsi, kecamatan };
         if (fotoTokoBase64) data.foto = fotoTokoBase64;
         if (whatsapp) data.whatsapp = whatsapp;
         await update(ref(db, 'penjual/' + infoUser.uid), data);
