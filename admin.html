@@ -29,7 +29,7 @@
     .admin-header {
       background: var(--admin-primary);
       color: white;
-      padding: 9px 14px;
+      padding: 12px 16px;
       position: fixed;
       top: 0;
       left: 0;
@@ -37,9 +37,9 @@
       z-index: 100;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 2px 12px;
+      gap: 6px 14px;
     }
 
     .admin-header .header-brand {
@@ -427,11 +427,36 @@
       margin-bottom: 10px;
       display: block;
     }
+
+    /* ===== RESPONSIVE (mobile ≤ 640px) ===== */
+    @media (max-width: 640px) {
+      /* Header: rapikan, email tidak memakan tempat */
+      .admin-header { padding: 10px 12px; gap: 4px 10px; }
+      .admin-header .user-email { font-size: 9px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      /* Tabel produk: grid 4-kolom → kartu 2-baris (nama di atas, harga|stok|tombol di bawah) */
+      .table-header { display: none; }
+      .table-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        grid-template-areas:
+          "nama nama nama"
+          "harga stok tombol";
+        gap: 6px 10px;
+        padding: 12px;
+      }
+      .table-row > div:nth-child(1) { grid-area: nama; font-weight: 600; }
+      .table-row > div:nth-child(2) { grid-area: harga; font-size: 13px; font-weight: 600; }
+      .table-row > div:nth-child(3) { grid-area: stok; font-size: 13px; }
+      .table-row > div:nth-child(3)::before { content: "Stok: "; color: #888; font-weight: 400; }
+      .table-row > div:nth-child(4) { grid-area: tombol; display: flex; justify-content: flex-end; }
+      .product-thumb { width: 36px; height: 36px; }
+    }
   </style>
 </head>
 <body>
 
-<!-- Loading overlay saat cek auth -->
+  <!-- Loading overlay saat cek auth -->
 <div class="auth-loading" id="authLoading">
   <i class="fas fa-spinner"></i>
   <p>Memeriksa login...</p>
@@ -472,8 +497,9 @@
       <div class="value">156</div>
       <small><i class="fas fa-eye"></i> Hari ini</small>
     </div>
+  </div>
 
-    <!-- TAB MENU -->
+  <!-- TAB MENU -->
   <div class="admin-tabs">
     <div class="admin-tab active" data-tab="produk">
       <i class="fas fa-box"></i>
@@ -730,9 +756,9 @@ function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKA
     pembaca.readAsDataURL(file);
   })
 }
-</script>
+  </script>
 
-<!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
+  <!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
 <script type="module">
 import { auth, db } from "./firebase-config.js";
 import { ref, push, set, onValue, update, remove }
@@ -1023,4 +1049,3 @@ function switchTab(tabName) {
 </script>
 </body>
 </html> 
-                                                                                              </div>
