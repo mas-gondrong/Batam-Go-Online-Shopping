@@ -381,6 +381,11 @@
       background: #d1f5e8;
       color: #0d6b56;
     }
+
+    .order-status.diproses {
+      background: #ede9fe;
+      color: #5b21b6;
+    }
     
     /* NAV BAWAH ADMIN */
     .admin-bottom-nav {
@@ -456,7 +461,7 @@
 </head>
 <body>
 
-  <!-- Loading overlay saat cek auth -->
+<!-- Loading overlay saat cek auth -->
 <div class="auth-loading" id="authLoading">
   <i class="fas fa-spinner"></i>
   <p>Memeriksa login...</p>
@@ -756,9 +761,9 @@ function kompresGambar(file, maxLebar = 600, kualitas = 0.5) { // ↪️ KECILKA
     pembaca.readAsDataURL(file);
   })
 }
-  </script>
+</script>
 
-  <!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
+<!-- BLOK SCRIPT ADMIN (gabungan tambah produk + daftar pesanan) -->
 <script type="module">
 import { auth, db } from "./firebase-config.js";
 import { ref, push, set, onValue, update, remove }
@@ -957,6 +962,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wadahPesananAdmin.innerHTML = listPesanan.map(pesanan => {
       let kelasStatus = "";
       if (pesanan.status === "Menunggu Diproses") kelasStatus = "menunggu";
+      if (pesanan.status === "Diproses")           kelasStatus = "diproses";
       if (pesanan.status === "Siap Dikirim")      kelasStatus = "siapdikirim";
       if (pesanan.status === "Sedang Dikirim")    kelasStatus = "proses";
       if (pesanan.status === "Selesai")            kelasStatus = "selesai";
@@ -975,6 +981,35 @@ document.addEventListener("DOMContentLoaded", () => {
         htmlDiterima = `<div style="font-size:12px;color:#28a745;margin:6px 0;padding:6px 8px;background:#eafaf1;border-radius:5px;"><i class="fas fa-check-circle"></i> ✓ Diterima pembeli: ${tglDiterima}</div>`;
       }
 
+      // ===== Aksi admin sesuai STATE MACHINE pesanan =====
+      // Admin hanya bisa advance pada 2 titik:
+      //   Menunggu Diproses → "Teruskan ke Penjual" (→ Diproses)
+      //   Siap Dikirim       → "Kirim ke Pembeli"   (→ Sedang Dikirim)
+      // Selain itu: info "menunggu [role]" (tanpa tombol). Selesai = tanpa tombol.
+      let htmlAksiAdmin = '';
+      const st = pesanan.status || 'Menunggu Diproses';
+      if (st === 'Menunggu Diproses') {
+        htmlAksiAdmin = `
+          <button class="btn btn-sm btn-primary btn-admin-aksi" data-id="${pesanan.id}" data-status="Diproses" style="width:100%;margin-top:8px;padding:10px;">
+            <i class="fas fa-paper-plane"></i> Teruskan ke Penjual
+          </button>
+          <div style="font-size:11px;color:#888;margin-top:4px;">Pembeli baru pesan. Teruskan ke penjual untuk disiapkan.</div>
+        `;
+      } else if (st === 'Diproses') {
+        htmlAksiAdmin = `<div style="font-size:12px;color:#666;margin-top:8px;padding:8px 10px;background:#f5f5f5;border-radius:5px;"><i class="fas fa-hourglass-half"></i> Menunggu penjual menyiapkan pesanan...</div>`;
+      } else if (st === 'Siap Dikirim') {
+        htmlAksiAdmin = `
+          <button class="btn btn-sm btn-success btn-admin-aksi" data-id="${pesanan.id}" data-status="Sedang Dikirim" style="width:100%;margin-top:8px;padding:10px;">
+            <i class="fas fa-truck"></i> Kirim ke Pembeli
+          </button>
+          <div style="font-size:11px;color:#888;margin-top:4px;">Penjual sudah siap. Kirim & beri tahu pembeli.</div>
+        `;
+      } else if (st === 'Sedang Dikirim') {
+        htmlAksiAdmin = `<div style="font-size:12px;color:#666;margin-top:8px;padding:8px 10px;background:#f5f5f5;border-radius:5px;"><i class="fas fa-hourglass-half"></i> Menunggu pembeli konfirmasi diterima...</div>`;
+      } else if (st === 'Selesai') {
+        htmlAksiAdmin = `<div style="font-size:12px;color:#28a745;margin-top:8px;padding:8px 10px;background:#eafaf1;border-radius:5px;"><i class="fas fa-check-circle"></i> Pesanan selesai.</div>`;
+      }
+
       return `
         <div class="order-card">
           <div class="order-header">
@@ -990,28 +1025,28 @@ document.addEventListener("DOMContentLoaded", () => {
           ${htmlSiapDikirim}
           ${htmlDiterima}
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            ${[
-              {label:'Menunggu', value:'Menunggu Diproses', cls:'btn-warning'},
-              {label:'Sedang Dikirim', value:'Sedang Dikirim', cls:'btn-primary'},
-              {label:'Selesai', value:'Selesai', cls:'btn-success'}
-            ].map(t => {
-              const aktif = (pesanan.status || 'Menunggu Diproses') === t.value;
-              return `<button class="btn btn-sm btn-status ${t.cls} ${aktif?'aktif':''}" data-id="${pesanan.id}" data-status="${t.value}" ${aktif?'disabled':''}>${aktif?'<i class="fas fa-check"></i> ':''}${t.label}</button>`;
-            }).join('')}
+            ${htmlAksiAdmin}
           </div>
-          <div style="font-size:11px;color:#888;margin-top:6px;"><i class="fas fa-info-circle"></i> Tombol gelap = status saat ini. Klik tombol lain untuk mengubah.</div>
         </div>
       `;
     }).join('');
 
-    // Pasang event listener tombol status (hindari inline onclick = function module scope)
-    wadahPesananAdmin.querySelectorAll("button[data-id]").forEach(tombol => {
+    // Pasang event listener tombol aksi admin (state machine: hanya 2 transisi valid)
+    wadahPesananAdmin.querySelectorAll(".btn-admin-aksi").forEach(tombol => {
       tombol.addEventListener("click", async () => {
         const idPesanan  = tombol.getAttribute("data-id");
         const statusBaru = tombol.getAttribute("data-status");
+        const pesan = {
+          'Diproses': 'Teruskan pesanan ini ke penjual?\n\nPenjual akan melihat pesanan untuk disiapkan.',
+          'Sedang Dikirim': 'Kirim pesanan ini ke pembeli?\n\nPembeli akan melihat status "Sedang Dikirim" dan menunggu pesanan diterima.'
+        };
+        if (!confirm(pesan[statusBaru] || 'Ubah status pesanan?')) return;
         try {
-          await update(ref(db, "pesanan/" + idPesanan), { status: statusBaru });
-          alert("✅ Status pesanan diperbarui: " + statusBaru);
+          const patch = { status: statusBaru };
+          if (statusBaru === 'Diproses')        patch.diprosesPada = Date.now();
+          if (statusBaru === 'Sedang Dikirim') patch.dikirimPada = Date.now();
+          await update(ref(db, "pesanan/" + idPesanan), patch);
+          alert("✅ Status diperbarui: " + statusBaru);
           // onValue akan otomatis re-render, tidak perlu reload
         } catch (err) {
           alert("❌ Gagal ubah status: " + err.message);
