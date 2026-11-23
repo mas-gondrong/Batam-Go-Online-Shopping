@@ -162,6 +162,7 @@ input, textarea {
       <input type="text" id="namaPenerima" placeholder="Nama Lengkap">
       <input type="text" id="noHp" placeholder="Nomor HP">
       <textarea id="alamatLengkap" rows="3" placeholder="Alamat lengkap (Jalan, RT RW, Kota)"></textarea>
+      <small style="color:#666;font-size:12px;display:block;margin-top:6px;"><i class="fas fa-info-circle"></i> Alamat akan otomatis tersimpan di profil Anda — tak perlu ketik ulang saat checkout berikutnya.</small>
     </div>
     
     <!-- DAFTAR BARANG -->
@@ -194,7 +195,7 @@ input, textarea {
 <script type="module">
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { ref, push, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { ref, push, get, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
 let userLogin = null;
 
@@ -291,6 +292,19 @@ btnKirim.addEventListener("click", async function(){
   }
 
   await push(ref(db, "pesanan"), pesananData);
+
+  // Simpan alamat ke profil pembeli (auto-save) supaya checkout berikutnya
+  // tidak perlu ketik ulang. Best-effort: kalau gagal, pesanan tetap terkirim.
+  if (user && user.uid) {
+    try {
+      await update(ref(db, 'users/' + user.uid), {
+        alamatPengiriman: { namaPenerima: nama, noHp: hp, alamat }
+      });
+    } catch (e) {
+      console.warn('Gagal simpan alamat ke profil (pesanan tetap terkirim):', e);
+    }
+  }
+
   localStorage.removeItem("keranjangToko");
 
   // === TOAST ===
