@@ -387,6 +387,20 @@
       color: #5b21b6;
     }
     
+    /* Badge notifikasi pesanan (merah, di tab Pesanan) */
+    .notif-badge {
+      position: absolute; top: -4px; right: -8px;
+      background: #dc3545; color: white;
+      font-size: 10px; font-weight: 700;
+      min-width: 18px; height: 18px;
+      border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0 5px; line-height: 1;
+      box-shadow: 0 0 0 2px white;
+      z-index: 5;
+    }
+    .admin-tab, .admin-bottom-nav a { position: relative; }
+
     /* NAV BAWAH ADMIN */
     .admin-bottom-nav {
       position: fixed;
@@ -461,7 +475,7 @@
 </head>
 <body>
 
-<!-- Loading overlay saat cek auth -->
+  <!-- Loading overlay saat cek auth -->
 <div class="auth-loading" id="authLoading">
   <i class="fas fa-spinner"></i>
   <p>Memeriksa login...</p>
@@ -517,6 +531,7 @@
     <div class="admin-tab" data-tab="pesanan">
       <i class="fas fa-receipt"></i>
       <span>Pesanan</span>
+      <span class="notif-badge badge-pesanan" style="display:none">0</span>
     </div>
     <div class="admin-tab" data-tab="pengaturan">
       <i class="fas fa-sliders-h"></i>
@@ -633,7 +648,7 @@
      TAB 3: DAFTAR PESANAN
      ===================================== -->
 <div class="tab-content" id="tab-pesanan">
-  <h3>Daftar Pesanan Pembeli</h3>
+  <h3>Daftar Pesanan Pembeli <span id="statusAudio" style="font-size:11px;color:#888;font-weight:normal;margin-left:8px;">🔇 Klik halaman utk aktifkan suara</span></h3>
   <div id="wadahPesananAdmin"></div>
 </div>
   
@@ -719,12 +734,13 @@
   <a href="#tab-pesanan" onclick="switchTab('pesanan')">
     <i class="fas fa-receipt"></i>
     <span>Pesanan</span>
+    <span class="notif-badge badge-pesanan" style="display:none">0</span>
   </a>
   <a href="index.html">
     <i class="fas fa-home"></i>
     <span>Toko</span>
   </a>
-</div>
+  </div>
 
   <!-- BLOK 1 FUNGSI KOMPRES -->
 <script>
@@ -769,6 +785,30 @@ import { auth, db } from "./firebase-config.js";
 import { ref, push, set, onValue, update, remove }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 import { lindungiHalaman, logout } from "./auth/auth-guard.js";
+import { unlockAudio, beep } from "./notif.js";
+
+// === Notifikasi: badge merah + audio beep saat pesanan baru perlu ditindak ===
+let _perluDitindakSebelumnya = null; // track utk deteksi pesanan baru (beep)
+
+function updateBadgePesanan(count) {
+  document.querySelectorAll('.badge-pesanan').forEach(b => {
+    if (count > 0) { b.textContent = count > 9 ? '9+' : count; b.style.display = 'inline-flex'; }
+    else { b.style.display = 'none'; }
+  });
+}
+
+// Unlock audio pada gesture pertama user (browser blok autoplay sebelum ada klik/tap)
+const _unlockAudioOnce = () => {
+  unlockAudio();
+  document.removeEventListener('pointerdown', _unlockAudioOnce);
+  document.removeEventListener('keydown', _unlockAudioOnce);
+  document.removeEventListener('touchstart', _unlockAudioOnce);
+  const s = document.getElementById('statusAudio');
+  if (s) { s.innerHTML = '🔔 Suara notifikasi aktif'; s.style.color = '#28a745'; }
+};
+document.addEventListener('pointerdown', _unlockAudioOnce);
+document.addEventListener('keydown', _unlockAudioOnce);
+document.addEventListener('touchstart', _unlockAudioOnce);
 
 // === CEK LOGIN: hanya admin yang boleh akses panel ini ===
 lindungiHalaman(['admin']).then(info => {
@@ -952,12 +992,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data) {
       wadahPesananAdmin.innerHTML =
         "<p style='text-align:center;padding:20px;color:#888;'>Belum ada pesanan masuk</p>";
+      updateBadgePesanan(0);
+      _perluDitindakSebelumnya = 0;
       return;
     }
 
     const listPesanan = Object.entries(data)
       .map(([id, val]) => ({ id, ...val }))
       .reverse(); // pesanan terbaru di atas
+
+    // Badge + beep: pesanan perlu ditindak admin (Menunggu Diproses / Siap Dikirim)
+    const perluDitindak = listPesanan.filter(p => p.status === 'Menunggu Diproses' || p.status === 'Siap Dikirim').length;
+    updateBadgePesanan(perluDitindak);
+    if (_perluDitindakSebelumnya !== null && perluDitindak > _perluDitindakSebelumnya) beep();
+    _perluDitindakSebelumnya = perluDitindak;
 
     wadahPesananAdmin.innerHTML = listPesanan.map(pesanan => {
       let kelasStatus = "";
