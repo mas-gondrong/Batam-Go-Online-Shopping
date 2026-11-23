@@ -341,6 +341,11 @@
         </select>
         <small>Lokasi toko terlihat pembeli. (Tiban, Tiban Indah, dll masuk Sekupang.)</small>
       </div>
+      <div class="form-group">
+        <label>Jam Operasional</label>
+        <input type="text" id="jamOperasionalInput" placeholder="Contoh: Setiap hari, 08:00–21:00" maxlength="60">
+        <small>Jam buka toko. Kosongkan kalau fleksibel/24 jam.</small>
+      </div>
 
       <button class="btn-simpan-form" id="btnSimpanToko">
         <i class="fas fa-save"></i> Simpan Profil Toko
@@ -834,6 +839,7 @@
         document.getElementById('deskripsiTokoInput').value = t.deskripsi || '';
         document.getElementById('whatsappInput').value = t.whatsapp || '';
         document.getElementById('kecamatanInput').value = t.kecamatan || '';
+        document.getElementById('jamOperasionalInput').value = t.jamOperasional || '';
         fotoTokoBase64 = t.foto || '';
         if (t.foto) {
           const prev = document.getElementById('previewFotoToko');
@@ -868,13 +874,14 @@
       const deskripsi = document.getElementById('deskripsiTokoInput').value.trim();
       const waRaw = document.getElementById('whatsappInput').value.trim();
       const kecamatan = document.getElementById('kecamatanInput').value;
+      const jamOperasional = document.getElementById('jamOperasionalInput').value.trim();
       if (!namaToko) { alert('❌ Nama toko wajib diisi.'); return; }
       const whatsapp = waRaw ? normalisasiWa(waRaw) : '';
       const btn = document.getElementById('btnSimpanToko');
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
       try {
-        const data = { namaToko, deskripsi, kecamatan };
+        const data = { namaToko, deskripsi, kecamatan, jamOperasional };
         if (fotoTokoBase64) data.foto = fotoTokoBase64;
         if (whatsapp) data.whatsapp = whatsapp;
         await update(ref(db, 'penjual/' + infoUser.uid), data);
