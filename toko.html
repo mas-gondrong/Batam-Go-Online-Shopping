@@ -101,6 +101,27 @@
       z-index:9999; display:none; font-size:14px;
     }
     .loading { text-align:center; padding:40px; color:#888; }
+
+    /* TAB BAR (Profil | Produk | Testimoni) */
+    .tab-bar { display:flex; background:white; border-radius:10px; padding:4px; margin:0 0 14px; gap:4px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .tab-btn { flex:1; padding:10px 4px; border:none; background:transparent; font-size:13px; color:#666; cursor:pointer; border-radius:8px; font-weight:600; transition:background .15s, color .15s; font-family:inherit; }
+    .tab-btn.aktif { background:var(--primary); color:white; }
+    .tab-btn .count { font-size:11px; opacity:0.8; }
+    .tab-panel { display:none; }
+    .tab-panel.terbuka { display:block; }
+
+    /* PROFIL DETAIL (isi tab Profil) */
+    .profil-detail { background:white; border-radius:10px; padding:14px 16px; }
+    .profil-detail .info-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid #f0f0f0; font-size:14px; color:#333; }
+    .profil-detail .info-row:last-child { border-bottom:none; }
+    .profil-detail .info-row i { color:var(--primary); width:22px; text-align:center; font-size:15px; }
+    .profil-detail .info-row .label { color:#888; flex:1; }
+    .profil-detail .info-row .nilai { font-weight:600; color:#222; text-align:right; }
+
+    /* Tombol Chat WhatsApp di tab Profil */
+    .btn-wa-toko { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px; margin-top:14px; background:#25d366; color:white; text-decoration:none; border-radius:10px; font-weight:700; font-size:14px; box-shadow:0 2px 5px rgba(37,211,102,0.3); transition:opacity .15s; }
+    .btn-wa-toko:hover { opacity:0.9; }
+    .btn-wa-toko i { font-size:18px; }
   </style>
 </head>
 <body>
@@ -241,25 +262,51 @@ if(!uidToko){
           <h2>${esc(toko.namaToko||'Toko Tanpa Nama')}</h2>
           <div class="pemilik">Pemilik: ${esc(pemilik.nama||'-')}</div>
           <div class="rating-bar">${ratingHTML}</div>
-          <div class="stat-row">
-            <span><i class="fas fa-box"></i>${produkToko.length} Produk</span>
-            <span><i class="fas fa-fire"></i>${Number(toko.totalTerjual||0)} Terjual</span>
-            <span><i class="fas fa-calendar"></i>Bergabung ${formatTanggal(toko.bergabungPada)}</span>
-          </div>
         </div>
       </div>
 
-      ${toko.deskripsi ? `<div class="deskripsi-toko"><h4>Tentang Toko</h4><p>${esc(toko.deskripsi)}</p></div>` : ''}
+      <div class="tab-bar">
+        <button class="tab-btn aktif" data-tab="Profil">Profil</button>
+        <button class="tab-btn" data-tab="Produk">Produk <span class="count">${produkToko.length}</span></button>
+        <button class="tab-btn" data-tab="Testimoni">Testimoni <span class="count">${jumlahTesti}</span></button>
+      </div>
 
-      <div class="section-title">Produk Toko <span class="count">${produkToko.length} produk</span></div>
-      ${produkToko.length
-        ? `<div class="products-grid">${produkToko.map(kartuProduk).join('')}</div>`
-        : `<div class="kosong-section"><i class="fas fa-box-open"></i>Toko belum punya produk</div>`}
+      <div class="tab-panel terbuka" id="panelProfil">
+        ${toko.deskripsi ? `<div class="deskripsi-toko"><h4>Tentang Toko</h4><p>${esc(toko.deskripsi)}</p></div>` : `<div class="deskripsi-toko"><h4>Tentang Toko</h4><p style="color:#999;">Toko ini belum menambahkan deskripsi.</p></div>`}
+        <div class="profil-detail">
+          <div class="info-row"><i class="fas fa-user"></i><span class="label">Pemilik</span><span class="nilai">${esc(pemilik.nama||'-')}</span></div>
+          <div class="info-row"><i class="fas fa-store"></i><span class="label">Nama Toko</span><span class="nilai">${esc(toko.namaToko||'-')}</span></div>
+          <div class="info-row"><i class="fas fa-box"></i><span class="label">Total Produk</span><span class="nilai">${produkToko.length}</span></div>
+          <div class="info-row"><i class="fas fa-fire"></i><span class="label">Total Terjual</span><span class="nilai">${Number(toko.totalTerjual||0)}</span></div>
+          <div class="info-row"><i class="fas fa-star"></i><span class="label">Rating</span><span class="nilai">${jumlahTesti?avgRating.toFixed(1):'-'} (${jumlahTesti} ulasan)</span></div>
+          <div class="info-row"><i class="fas fa-calendar"></i><span class="label">Bergabung Sejak</span><span class="nilai">${formatTanggal(toko.bergabungPada)||'-'}</span></div>
+        </div>
+        ${toko.whatsapp ? `<a href="https://wa.me/${esc(toko.whatsapp)}" target="_blank" rel="noopener" class="btn-wa-toko"><i class="fab fa-whatsapp"></i> Chat WhatsApp Penjual</a>` : `<div style="font-size:12px;color:#999;text-align:center;margin-top:12px;">Penjual belum mengisi nomor WhatsApp.</div>`}
+      </div>
 
-      <div class="section-title">Testimoni Pembeli <span class="count">${jumlahTesti} ulasan</span></div>
-      <div id="wadahFormTestimoni"></div>
-      <div id="wadahTestimoni">${renderListTestimoni(arrTesti)}</div>
+      <div class="tab-panel" id="panelProduk">
+        <div class="section-title">Produk Toko <span class="count">${produkToko.length} produk</span></div>
+        ${produkToko.length
+          ? `<div class="products-grid">${produkToko.map(kartuProduk).join('')}</div>`
+          : `<div class="kosong-section"><i class="fas fa-box-open"></i>Toko belum punya produk</div>`}
+      </div>
+
+      <div class="tab-panel" id="panelTestimoni">
+        <div class="section-title">Testimoni Pembeli <span class="count">${jumlahTesti} ulasan</span></div>
+        <div id="wadahFormTestimoni"></div>
+        <div id="wadahTestimoni">${renderListTestimoni(arrTesti)}</div>
+      </div>
     `;
+
+    // Handler tab: Profil | Produk | Testimoni
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('aktif'));
+        btn.classList.add('aktif');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('terbuka'));
+        document.getElementById('panel' + btn.dataset.tab).classList.add('terbuka');
+      });
+    });
 
     renderFormTestimoni();
   }).catch(err => {
