@@ -49,6 +49,14 @@
     .rating-bar .bintang .kosong { color:#ddd; }
     .rating-bar .angka { font-weight:bold; color:#333; }
     .rating-bar .count { color:#888; font-size:12px; }
+
+    /* Badge "Batam" + lokasi + jam di header toko (prompt kelihatan pembeli) */
+    .badge-batam { display:inline-flex; align-items:center; gap:3px; background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; border-radius:999px; padding:2px 8px; font-size:11px; font-weight:700; vertical-align:middle; margin-left:6px; }
+    .badge-batam i { font-size:10px; }
+    .info-toko .lokasi-toko { font-size:12px; color:#555; margin-bottom:3px; display:flex; align-items:center; gap:4px; }
+    .info-toko .lokasi-toko i { color:#2e7d32; font-size:11px; }
+    .info-toko .jam-toko { font-size:12px; color:#555; margin-bottom:6px; display:flex; align-items:center; gap:4px; }
+    .info-toko .jam-toko i { color:#f59e0b; font-size:11px; }
     .stat-row { display:flex; gap:14px; margin-top:8px; font-size:12px; color:#666; flex-wrap:wrap; }
     .stat-row span i { color:#43a047; margin-right:3px; }
 
@@ -259,8 +267,10 @@ if(!uidToko){
       <div class="profil-toko">
         <div class="ikon-toko">${ikonHTML}</div>
         <div class="info-toko">
-          <h2>${esc(toko.namaToko||'Toko Tanpa Nama')}</h2>
+          <h2>${esc(toko.namaToko||'Toko Tanpa Nama')}${toko.kecamatan ? ' <span class="badge-batam"><i class="fas fa-check-circle"></i> Batam</span>' : ''}</h2>
           <div class="pemilik">Pemilik: ${esc(pemilik.nama||'-')}</div>
+          ${toko.kecamatan ? `<div class="lokasi-toko"><i class="fas fa-map-marker-alt"></i> ${esc(toko.kecamatan)}, Batam</div>` : ''}
+          ${toko.jamOperasional ? `<div class="jam-toko"><i class="fas fa-clock"></i> ${esc(toko.jamOperasional)}</div>` : ''}
           <div class="rating-bar">${ratingHTML}</div>
         </div>
       </div>
@@ -281,6 +291,7 @@ if(!uidToko){
           <div class="info-row"><i class="fas fa-star"></i><span class="label">Rating</span><span class="nilai">${jumlahTesti?avgRating.toFixed(1):'-'} (${jumlahTesti} ulasan)</span></div>
           <div class="info-row"><i class="fas fa-calendar"></i><span class="label">Bergabung Sejak</span><span class="nilai">${formatTanggal(toko.bergabungPada)||'-'}</span></div>
           ${toko.kecamatan ? `<div class="info-row"><i class="fas fa-map-marker-alt"></i><span class="label">Kecamatan</span><span class="nilai">${esc(toko.kecamatan)}</span></div>` : ''}
+          ${toko.jamOperasional ? `<div class="info-row"><i class="fas fa-clock"></i><span class="label">Jam Operasional</span><span class="nilai">${esc(toko.jamOperasional)}</span></div>` : ''}
         </div>
         ${toko.whatsapp ? `<a href="https://wa.me/${esc(toko.whatsapp)}" target="_blank" rel="noopener" class="btn-wa-toko"><i class="fab fa-whatsapp"></i> Chat WhatsApp Penjual</a>` : `<div style="font-size:12px;color:#999;text-align:center;margin-top:12px;">Penjual belum mengisi nomor WhatsApp.</div>`}
       </div>
@@ -389,3 +400,4 @@ async function kirimTestimoni(){
 </script>
 </body>
 </html> 
+    
