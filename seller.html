@@ -139,6 +139,7 @@
     }
     .status.menunggu { background: #f59e0b; }
     .status.siapdikirim { background: #0d9488; }
+    .status.diproses { background: #6b46c1; }
     .status.dikirim { background: #3b82f6; }
     .status.selesai { background: #22c55e; }
     .pesanan-card .tanggal { font-size: 11px; color: #999; margin-bottom: 8px; }
@@ -704,7 +705,7 @@
     //  Admin & pembeli auto-update via onValue (real-time).
     // =====================================================
     async function tandaiSiapDikirim(idPesanan) {
-      if (!confirm('Tandai pesanan ini "Siap Dikirim"?\n\nAdmin akan melihat pesanan siap diproses pengiriman.')) return;
+      if (!confirm('Tandai pesanan ini "Siap Dikirim"?\n\nAdmin akan diberi tahu untuk mengirim ke pembeli.')) return;
       try {
         await update(ref(db, 'pesanan/' + idPesanan), {
           status: 'Siap Dikirim',
@@ -749,6 +750,7 @@
           const items = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang || {});
           const status = pesan.status || 'Menunggu Diproses';
           let kelasStatus = 'menunggu';
+          if (status === 'Diproses') kelasStatus = 'diproses';
           if (status === 'Siap Dikirim') kelasStatus = 'siapdikirim';
           if (status === 'Sedang Dikirim') kelasStatus = 'dikirim';
           if (status === 'Selesai') kelasStatus = 'selesai';
@@ -781,15 +783,27 @@
             htmlSiapDikirim = `<div style="font-size:12px;color:#0d9488;margin:6px 0;padding:6px 8px;background:#e6fffa;border-radius:5px;"><i class="fas fa-box"></i> Ditandai siap dikirim: ${tglSiap}</div>`;
           }
 
-          // Tombol "Tandai Siap Dikirim" muncul HANYA saat status Menunggu Diproses
+          // Aksi penjual sesuai STATE MACHINE:
+          //   Diproses → tombol "Tandai Siap Dikirim" (→ Siap Dikirim)
+          //   Menunggu Diproses → info "menunggu admin" (penjual belum bisa apa²)
+          //   Selain itu → info status (tanpa tombol). Selesai = tanpa tombol.
           let htmlAksiSiapDikirim = '';
           if (status === 'Menunggu Diproses') {
+            htmlAksiSiapDikirim = `<div style="font-size:12px;color:#888;margin-top:10px;padding:9px;background:#f5f5f5;border-radius:6px;text-align:center;"><i class="fas fa-hourglass-half"></i> Menunggu admin meneruskan pesanan ke Anda.</div>`;
+          } else if (status === 'Diproses') {
             htmlAksiSiapDikirim = `
               <button class="btn-siap-dikirim" data-id="${pesan.id}"
                 style="display:block;width:100%;margin-top:10px;padding:11px;background:#0d9488;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
                 <i class="fas fa-box-open"></i> Tandai Pesanan Siap Dikirim
               </button>
+              <div style="font-size:11px;color:#888;margin-top:4px;text-align:center;">Admin sudah teruskan pesanan. Siapkan & tandai siap dikirim.</div>
             `;
+          } else if (status === 'Siap Dikirim') {
+            htmlAksiSiapDikirim = `<div style="font-size:12px;color:#0d6b56;margin-top:10px;padding:9px;background:#e6fffa;border-radius:6px;text-align:center;"><i class="fas fa-check-circle"></i> Menunggu admin mengirim ke pembeli.</div>`;
+          } else if (status === 'Sedang Dikirim') {
+            htmlAksiSiapDikirim = `<div style="font-size:12px;color:#3b82f6;margin-top:10px;padding:9px;background:#eff6ff;border-radius:6px;text-align:center;"><i class="fas fa-truck"></i> Pesanan sedang dikirim ke pembeli.</div>`;
+          } else if (status === 'Selesai') {
+            htmlAksiSiapDikirim = `<div style="font-size:12px;color:#22c55e;margin-top:10px;padding:9px;background:#f0fdf4;border-radius:6px;text-align:center;"><i class="fas fa-check-circle"></i> Pesanan selesai.</div>`;
           }
 
           return `
