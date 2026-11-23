@@ -2,7 +2,7 @@
 //  SERVICE WORKER — Batam Go Online Shopping (PWA)
 //  Versi fault-tolerant: 1 aset gagal tidak crash install
 // ===================================================
-const CACHE_NAME = 'batam-go-v102';
+const CACHE_NAME = 'batam-go-v103';
 const ASSETS = [
   './',
   './index.html',
