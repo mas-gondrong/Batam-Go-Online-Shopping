@@ -55,6 +55,9 @@
     .status.siapdikirim {
       background:#0d9488;
     }
+    .status.diproses {
+      background:#6b46c1;
+    }
     .status.dikirim {
       background:#3b82f6;
     }
@@ -178,6 +181,7 @@
 
       kontenRiwayat.innerHTML = listPesanan.map((pesan, idx) => {
   let kelasStatus = "menunggu";
+  if (pesan.status === "Diproses")        kelasStatus = "diproses";
   if (pesan.status === "Siap Dikirim") kelasStatus = "siapdikirim";
   if (pesan.status === "Sedang Dikirim") kelasStatus = "dikirim";
   if (pesan.status === "Selesai")        kelasStatus = "selesai";
@@ -206,15 +210,23 @@
   const status  = pesan.status || "-";
   const tanggal = pesan.tanggal || "-";
 
-  // Tombol "Pesanan Sudah Diterima" muncul HANYA saat status Sedang Dikirim.
-  // Klik → status jadi "Selesai" + catat diterimaPada → sync ke admin & penjual (real-time via onValue).
+  // Aksi pembeli sesuai STATE MACHINE:
+  //   Sedang Dikirim → tombol "Pesanan Sudah Diterima" (→ Selesai)
+  //   Selain itu → info status (tanpa tombol). Selesai = info diterima (tanpa tombol).
   let htmlAksiDiterima = '';
-  if (status === 'Sedang Dikirim') {
+  if (status === 'Menunggu Diproses') {
+    htmlAksiDiterima = `<div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:6px;font-size:12px;color:#856404;"><i class="fas fa-hourglass-half"></i> Pesanan menunggu diproses admin.</div>`;
+  } else if (status === 'Diproses') {
+    htmlAksiDiterima = `<div style="margin-top:10px;padding:8px 10px;background:#f5f0ff;border-radius:6px;font-size:12px;color:#6b46c1;"><i class="fas fa-box"></i> Penjual sedang menyiapkan pesanan Anda.</div>`;
+  } else if (status === 'Siap Dikirim') {
+    htmlAksiDiterima = `<div style="margin-top:10px;padding:8px 10px;background:#e6fffa;border-radius:6px;font-size:12px;color:#0d6b56;"><i class="fas fa-check-circle"></i> Pesanan siap, menunggu dikirim.</div>`;
+  } else if (status === 'Sedang Dikirim') {
     htmlAksiDiterima = `
       <button class="btn-diterima" data-id="${pesan.id}"
         style="display:block;width:100%;margin-top:12px;padding:12px;background:#28a745;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
         <i class="fas fa-check-circle"></i> Pesanan Sudah Diterima
       </button>
+      <div style="font-size:11px;color:#888;margin-top:4px;text-align:center;">Pesanan dalam perjalanan. Klik tombol setelah diterima.</div>
     `;
   } else if (status === 'Selesai' && pesan.diterimaPada) {
     const tglDiterima = new Date(pesan.diterimaPada).toLocaleString('id-ID');
@@ -223,6 +235,8 @@
         <i class="fas fa-check-circle"></i> Diterima pada: ${tglDiterima}
       </div>
     `;
+  } else if (status === 'Selesai') {
+    htmlAksiDiterima = `<div style="margin-top:10px;padding:8px 10px;background:#eafaf1;border-radius:6px;font-size:12px;color:#1e8e4e;"><i class="fas fa-check-circle"></i> Pesanan selesai.</div>`;
   }
 
   return `
