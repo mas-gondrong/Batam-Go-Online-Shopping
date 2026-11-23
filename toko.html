@@ -280,6 +280,7 @@ if(!uidToko){
           <div class="info-row"><i class="fas fa-fire"></i><span class="label">Total Terjual</span><span class="nilai">${Number(toko.totalTerjual||0)}</span></div>
           <div class="info-row"><i class="fas fa-star"></i><span class="label">Rating</span><span class="nilai">${jumlahTesti?avgRating.toFixed(1):'-'} (${jumlahTesti} ulasan)</span></div>
           <div class="info-row"><i class="fas fa-calendar"></i><span class="label">Bergabung Sejak</span><span class="nilai">${formatTanggal(toko.bergabungPada)||'-'}</span></div>
+          ${toko.kecamatan ? `<div class="info-row"><i class="fas fa-map-marker-alt"></i><span class="label">Kecamatan</span><span class="nilai">${esc(toko.kecamatan)}</span></div>` : ''}
         </div>
         ${toko.whatsapp ? `<a href="https://wa.me/${esc(toko.whatsapp)}" target="_blank" rel="noopener" class="btn-wa-toko"><i class="fab fa-whatsapp"></i> Chat WhatsApp Penjual</a>` : `<div style="font-size:12px;color:#999;text-align:center;margin-top:12px;">Penjual belum mengisi nomor WhatsApp.</div>`}
       </div>
