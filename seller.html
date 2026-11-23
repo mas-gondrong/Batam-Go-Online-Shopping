@@ -142,6 +142,20 @@
     .status.diproses { background: #6b46c1; }
     .status.dikirim { background: #3b82f6; }
     .status.selesai { background: #22c55e; }
+
+    /* Badge notifikasi pesanan (merah, di tab Pesanan Masuk) */
+    .notif-badge {
+      position: absolute; top: -4px; right: -8px;
+      background: #dc3545; color: white;
+      font-size: 10px; font-weight: 700;
+      min-width: 18px; height: 18px;
+      border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0 5px; line-height: 1;
+      box-shadow: 0 0 0 2px white;
+      z-index: 5;
+    }
+    .tab { position: relative; }
     .pesanan-card .tanggal { font-size: 11px; color: #999; margin-bottom: 8px; }
     .pesanan-card .pembeli { font-size: 13px; color: #555; margin-bottom: 6px; line-height: 1.4; }
     .pesanan-card .pembeli strong { color: #333; }
@@ -222,6 +236,7 @@
     </div>
     <div class="tab" data-tab="pesanan">
       <i class="fas fa-shopping-bag"></i>Pesanan Masuk
+      <span class="notif-badge badge-pesanan" style="display:none">0</span>
     </div>
     <div class="tab" data-tab="toko">
       <i class="fas fa-store"></i>Profil Toko
@@ -293,6 +308,7 @@
 
   <!-- TAB 3: PESANAN MASUK -->
   <div class="tab-content" id="tab-pesanan">
+    <h3 style="margin:0 0 10px;font-size:16px;">Pesanan Masuk <span id="statusAudio" style="font-size:11px;color:#888;font-weight:normal;margin-left:8px;">🔇 Klik halaman utk aktifkan suara</span></h3>
     <div id="daftarPesananMasuk">
       <div class="text-kosong"><i class="fas fa-spinner"></i><p>Memuat pesanan...</p></div>
     </div>
@@ -360,9 +376,9 @@
     <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
     <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
     <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
-  </nav>
+      </nav>
 
-  <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
+      <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
   <script>
     let fotoBase64 = "";
     function kompresGambar(file, maxLebar = 600, kualitas = 0.5) {
@@ -414,6 +430,30 @@
     import { ref, push, set, update, remove, onValue, get }
       from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
     import { lindungiHalaman, logout } from './auth/auth-guard.js';
+    import { unlockAudio, beep } from './notif.js';
+
+    // === Notifikasi: badge merah + audio beep saat pesanan baru perlu ditindak ===
+    let _perluDitindakSebelumnya = null;
+
+    function updateBadgePesanan(count) {
+      document.querySelectorAll('.badge-pesanan').forEach(b => {
+        if (count > 0) { b.textContent = count > 9 ? '9+' : count; b.style.display = 'inline-flex'; }
+        else { b.style.display = 'none'; }
+      });
+    }
+
+    // Unlock audio pada gesture pertama user (browser blok autoplay sebelum ada klik/tap)
+    const _unlockAudioOnce = () => {
+      unlockAudio();
+      document.removeEventListener('pointerdown', _unlockAudioOnce);
+      document.removeEventListener('keydown', _unlockAudioOnce);
+      document.removeEventListener('touchstart', _unlockAudioOnce);
+      const s = document.getElementById('statusAudio');
+      if (s) { s.innerHTML = '🔔 Suara notifikasi aktif'; s.style.color = '#28a745'; }
+    };
+    document.addEventListener('pointerdown', _unlockAudioOnce);
+    document.addEventListener('keydown', _unlockAudioOnce);
+    document.addEventListener('touchstart', _unlockAudioOnce);
 
     let infoUser = null;
     let modeForm = 'tambah';   // 'tambah' | 'edit'
@@ -728,6 +768,7 @@
         const data = snapshot.val();
         if (!data) {
           wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-inbox"></i><p>Belum ada pesanan masuk.</p></div>`;
+          updateBadgePesanan(0); _perluDitindakSebelumnya = 0;
           return;
         }
 
@@ -740,6 +781,12 @@
           const items = Array.isArray(pesan.barang) ? pesan.barang : Object.values(pesan.barang || {});
           return items.some(brg => brg.uidPenjual === infoUser.uid);
         });
+
+        // Badge + beep: pesanan perlu ditindak penjual (status Diproses)
+        const perluDitindak = pesananSaya.filter(p => p.status === 'Diproses').length;
+        updateBadgePesanan(perluDitindak);
+        if (_perluDitindakSebelumnya !== null && perluDitindak > _perluDitindakSebelumnya) beep();
+        _perluDitindakSebelumnya = perluDitindak;
 
         if (pesananSaya.length === 0) {
           wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-inbox"></i><p>Belum ada pesanan untuk produk Anda.<br>Pesanan akan muncul di sini saat pembeli membeli produk Anda.</p></div>`;
