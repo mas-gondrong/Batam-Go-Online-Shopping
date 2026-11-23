@@ -277,6 +277,18 @@
   z-index: 10;
   cursor: pointer;
 }
+
+    /* btn-warning sebelumnya tak terdefinisi → pakai oranye (konsisten dgn seller/riwayat) */
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+    }
+
+    /* Tombol status pesanan: aktif = status saat ini (pudar yang lain) */
+    .btn-status { opacity: 0.45; transition: opacity 0.15s, box-shadow 0.15s; }
+    .btn-status:hover:not(:disabled) { opacity: 0.8; }
+    .btn-status.aktif { opacity: 1; font-weight: 700; box-shadow: 0 0 0 3px rgba(0,0,0,0.18); }
+    .btn-status:disabled { cursor: default; }
     
     /* DAFTAR PRODUK TABEL */
     .table-card {
@@ -460,9 +472,8 @@
       <div class="value">156</div>
       <small><i class="fas fa-eye"></i> Hari ini</small>
     </div>
-  </div>
 
-  <!-- TAB MENU -->
+    <!-- TAB MENU -->
   <div class="admin-tabs">
     <div class="admin-tab active" data-tab="produk">
       <i class="fas fa-box"></i>
@@ -952,11 +963,17 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           ${htmlSiapDikirim}
           ${htmlDiterima}
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-sm btn-warning" data-id="${pesanan.id}" data-status="Menunggu Diproses">Menunggu</button>
-            <button class="btn btn-sm btn-primary"  data-id="${pesanan.id}" data-status="Sedang Dikirim">Sedang Dikirim</button>
-            <button class="btn btn-sm btn-success" data-id="${pesanan.id}" data-status="Selesai">Tandai Selesai</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            ${[
+              {label:'Menunggu', value:'Menunggu Diproses', cls:'btn-warning'},
+              {label:'Sedang Dikirim', value:'Sedang Dikirim', cls:'btn-primary'},
+              {label:'Selesai', value:'Selesai', cls:'btn-success'}
+            ].map(t => {
+              const aktif = (pesanan.status || 'Menunggu Diproses') === t.value;
+              return `<button class="btn btn-sm btn-status ${t.cls} ${aktif?'aktif':''}" data-id="${pesanan.id}" data-status="${t.value}" ${aktif?'disabled':''}>${aktif?'<i class="fas fa-check"></i> ':''}${t.label}</button>`;
+            }).join('')}
           </div>
+          <div style="font-size:11px;color:#888;margin-top:6px;"><i class="fas fa-info-circle"></i> Tombol gelap = status saat ini. Klik tombol lain untuk mengubah.</div>
         </div>
       `;
     }).join('');
@@ -1006,3 +1023,4 @@ function switchTab(tabName) {
 </script>
 </body>
 </html> 
+                                                                                              </div>
