@@ -376,9 +376,9 @@
     <a href="produk.html"><i class="fas fa-th-large"></i><span>Kategori</span></a>
     <a href="keranjang.html"><i class="fas fa-shopping-cart"></i><span>Keranjang</span></a>
     <a href="profil.html"><i class="fas fa-user"></i><span>Akun</span></a>
-      </nav>
+        </nav>
 
-      <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
+  <!-- SCRIPT: KOMPRES GAMBAR (reguler, bukan module) -->
   <script>
     let fotoBase64 = "";
     function kompresGambar(file, maxLebar = 600, kualitas = 0.5) {
@@ -430,10 +430,13 @@
     import { ref, push, set, update, remove, onValue, get }
       from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
     import { lindungiHalaman, logout } from './auth/auth-guard.js';
-    import { unlockAudio, beep } from './notif.js';
+    import { unlockAudio, beep, audioStatus } from './notif.js';
 
     // === Notifikasi: badge merah + audio beep saat pesanan baru perlu ditindak ===
-    let _perluDitindakSebelumnya = null;
+    // lastSeen disimpan di localStorage supaya "pesanan baru sejak kunjungan terakhir"
+    // tetap terdeteksi meski dashboard ditutup lalu dibuka lagi.
+    const LAST_SEEN_KEY = 'lastSeenPesananSeller';
+    let _currentPerluDitindak = 0;
 
     function updateBadgePesanan(count) {
       document.querySelectorAll('.badge-pesanan').forEach(b => {
@@ -442,18 +445,47 @@
       });
     }
 
-    // Unlock audio pada gesture pertama user (browser blok autoplay sebelum ada klik/tap)
-    const _unlockAudioOnce = () => {
-      unlockAudio();
-      document.removeEventListener('pointerdown', _unlockAudioOnce);
-      document.removeEventListener('keydown', _unlockAudioOnce);
-      document.removeEventListener('touchstart', _unlockAudioOnce);
+    function _updateAudioIndicator() {
       const s = document.getElementById('statusAudio');
-      if (s) { s.innerHTML = '🔔 Suara notifikasi aktif'; s.style.color = '#28a745'; }
+      if (!s) return;
+      const st = audioStatus();
+      if (st.unlocked) { s.innerHTML = '🔔 Suara notifikasi aktif'; s.style.color = '#28a745'; }
+      else if (st.pending) { s.innerHTML = '🔇 Ada pesanan baru — klik utk dengar 🔔'; s.style.color = '#dc3545'; }
+      else { s.innerHTML = '🔇 Klik halaman utk aktifkan suara'; s.style.color = '#888'; }
+    }
+
+    // Update badge + bunyikan beep kalau ada pesanan baru (sejak lastSeen).
+    function prosesNotifPesanan(perluDitindak) {
+      _currentPerluDitindak = perluDitindak;
+      updateBadgePesanan(perluDitindak);
+      const raw = localStorage.getItem(LAST_SEEN_KEY);
+      const lastSeen = raw === null ? null : Number(raw);
+      if (lastSeen === null) {
+        localStorage.setItem(LAST_SEEN_KEY, String(perluDitindak));
+      } else if (perluDitindak > lastSeen) {
+        const played = beep();
+        if (played) localStorage.setItem(LAST_SEEN_KEY, String(perluDitindak));
+      } else if (perluDitindak < lastSeen) {
+        localStorage.setItem(LAST_SEEN_KEY, String(perluDitindak));
+      }
+      _updateAudioIndicator();
+    }
+
+    // Unlock/resume audio pada setiap gesture + saat halaman kembali visible (handle background HP)
+    const _onGesture = () => {
+      unlockAudio();
+      if (audioStatus().unlocked) {
+        const lastSeen = Number(localStorage.getItem(LAST_SEEN_KEY) || 0);
+        if (_currentPerluDitindak > lastSeen) {
+          localStorage.setItem(LAST_SEEN_KEY, String(_currentPerluDitindak));
+        }
+      }
+      _updateAudioIndicator();
     };
-    document.addEventListener('pointerdown', _unlockAudioOnce);
-    document.addEventListener('keydown', _unlockAudioOnce);
-    document.addEventListener('touchstart', _unlockAudioOnce);
+    document.addEventListener('pointerdown', _onGesture);
+    document.addEventListener('keydown', _onGesture);
+    document.addEventListener('touchstart', _onGesture);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) _onGesture(); });
 
     let infoUser = null;
     let modeForm = 'tambah';   // 'tambah' | 'edit'
@@ -643,7 +675,7 @@
         }
       });
 
-      // Tombol Simpan / Update
+    // Tombol Simpan / Update
       document.getElementById('btnSimpanProduk').addEventListener('click', async () => {
         const nama = document.getElementById('namaProduk').value.trim();
         const harga = Number(document.getElementById('hargaProduk').value);
@@ -768,7 +800,7 @@
         const data = snapshot.val();
         if (!data) {
           wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-inbox"></i><p>Belum ada pesanan masuk.</p></div>`;
-          updateBadgePesanan(0); _perluDitindakSebelumnya = 0;
+          prosesNotifPesanan(0);
           return;
         }
 
@@ -784,9 +816,7 @@
 
         // Badge + beep: pesanan perlu ditindak penjual (status Diproses)
         const perluDitindak = pesananSaya.filter(p => p.status === 'Diproses').length;
-        updateBadgePesanan(perluDitindak);
-        if (_perluDitindakSebelumnya !== null && perluDitindak > _perluDitindakSebelumnya) beep();
-        _perluDitindakSebelumnya = perluDitindak;
+        prosesNotifPesanan(perluDitindak);
 
         if (pesananSaya.length === 0) {
           wadah.innerHTML = `<div class="text-kosong"><i class="fas fa-inbox"></i><p>Belum ada pesanan untuk produk Anda.<br>Pesanan akan muncul di sini saat pembeli membeli produk Anda.</p></div>`;
