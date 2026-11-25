@@ -740,7 +740,7 @@
     <i class="fas fa-home"></i>
     <span>Toko</span>
   </a>
-  </div>
+</div>
 
   <!-- BLOK 1 FUNGSI KOMPRES -->
 <script>
@@ -785,10 +785,13 @@ import { auth, db } from "./firebase-config.js";
 import { ref, push, set, onValue, update, remove }
   from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 import { lindungiHalaman, logout } from "./auth/auth-guard.js";
-import { unlockAudio, beep } from "./notif.js";
+import { unlockAudio, beep, audioStatus } from "./notif.js";
 
 // === Notifikasi: badge merah + audio beep saat pesanan baru perlu ditindak ===
-let _perluDitindakSebelumnya = null; // track utk deteksi pesanan baru (beep)
+// lastSeen disimpan di localStorage supaya "pesanan baru sejak kunjungan terakhir"
+// tetap terdeteksi meski dashboard ditutup lalu dibuka lagi.
+const LAST_SEEN_KEY = 'lastSeenPesananAdmin';
+let _currentPerluDitindak = 0;
 
 function updateBadgePesanan(count) {
   document.querySelectorAll('.badge-pesanan').forEach(b => {
@@ -797,18 +800,49 @@ function updateBadgePesanan(count) {
   });
 }
 
-// Unlock audio pada gesture pertama user (browser blok autoplay sebelum ada klik/tap)
-const _unlockAudioOnce = () => {
-  unlockAudio();
-  document.removeEventListener('pointerdown', _unlockAudioOnce);
-  document.removeEventListener('keydown', _unlockAudioOnce);
-  document.removeEventListener('touchstart', _unlockAudioOnce);
+function _updateAudioIndicator() {
   const s = document.getElementById('statusAudio');
-  if (s) { s.innerHTML = '🔔 Suara notifikasi aktif'; s.style.color = '#28a745'; }
+  if (!s) return;
+  const st = audioStatus();
+  if (st.unlocked) { s.innerHTML = '🔔 Suara notifikasi aktif'; s.style.color = '#28a745'; }
+  else if (st.pending) { s.innerHTML = '🔇 Ada pesanan baru — klik utk dengar 🔔'; s.style.color = '#dc3545'; }
+  else { s.innerHTML = '🔇 Klik halaman utk aktifkan suara'; s.style.color = '#888'; }
+}
+
+  // Update badge + bunyikan beep kalau ada pesanan baru (sejak lastSeen).
+// beep() return false kalau belum unlock → pending (tidak hilang), lastSeen baru update saat benar2 bunyi.
+function prosesNotifPesanan(perluDitindak) {
+  _currentPerluDitindak = perluDitindak;
+  updateBadgePesanan(perluDitindak);
+  const raw = localStorage.getItem(LAST_SEEN_KEY);
+  const lastSeen = raw === null ? null : Number(raw);
+  if (lastSeen === null) {
+    localStorage.setItem(LAST_SEEN_KEY, String(perluDitindak)); // prime pertama kali, no beep
+  } else if (perluDitindak > lastSeen) {
+    const played = beep();
+    if (played) localStorage.setItem(LAST_SEEN_KEY, String(perluDitindak));
+  } else if (perluDitindak < lastSeen) {
+    localStorage.setItem(LAST_SEEN_KEY, String(perluDitindak)); // pesanan ditindak
+  }
+  _updateAudioIndicator();
+}
+
+// Unlock/resume audio pada setiap gesture + saat halaman kembali visible (handle background HP)
+const _onGesture = () => {
+  unlockAudio();
+  // kalau tadi beep pending, lastSeen belum update → update sekarang (beep sudah/akan main)
+  if (audioStatus().unlocked) {
+    const lastSeen = Number(localStorage.getItem(LAST_SEEN_KEY) || 0);
+    if (_currentPerluDitindak > lastSeen) {
+      localStorage.setItem(LAST_SEEN_KEY, String(_currentPerluDitindak));
+    }
+  }
+  _updateAudioIndicator();
 };
-document.addEventListener('pointerdown', _unlockAudioOnce);
-document.addEventListener('keydown', _unlockAudioOnce);
-document.addEventListener('touchstart', _unlockAudioOnce);
+document.addEventListener('pointerdown', _onGesture);
+document.addEventListener('keydown', _onGesture);
+document.addEventListener('touchstart', _onGesture);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) _onGesture(); });
 
 // === CEK LOGIN: hanya admin yang boleh akses panel ini ===
 lindungiHalaman(['admin']).then(info => {
@@ -992,8 +1026,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data) {
       wadahPesananAdmin.innerHTML =
         "<p style='text-align:center;padding:20px;color:#888;'>Belum ada pesanan masuk</p>";
-      updateBadgePesanan(0);
-      _perluDitindakSebelumnya = 0;
+      prosesNotifPesanan(0);
       return;
     }
 
@@ -1003,9 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Badge + beep: pesanan perlu ditindak admin (Menunggu Diproses / Siap Dikirim)
     const perluDitindak = listPesanan.filter(p => p.status === 'Menunggu Diproses' || p.status === 'Siap Dikirim').length;
-    updateBadgePesanan(perluDitindak);
-    if (_perluDitindakSebelumnya !== null && perluDitindak > _perluDitindakSebelumnya) beep();
-    _perluDitindakSebelumnya = perluDitindak;
+    prosesNotifPesanan(perluDitindak);
 
     wadahPesananAdmin.innerHTML = listPesanan.map(pesanan => {
       let kelasStatus = "";
